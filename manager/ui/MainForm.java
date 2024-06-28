@@ -34,7 +34,7 @@ public class MainForm extends JDialog {
 	private String userId;
 	private JTextArea check;
 
-	private JButton dbRegBtn;
+	private JButton btnDBReg;
 
 	private JButton btnLogout;
 	private JButton btnWithdraw;
@@ -61,8 +61,8 @@ public class MainForm extends JDialog {
 		check = new JTextArea(10, 30);
 		check.setEditable(false);
 
-		dbRegBtn = new JButton("DB 등록");
-		dbRegBtn.setPreferredSize(btnSize);
+		btnDBReg = new JButton("DB 등록");
+		btnDBReg.setPreferredSize(btnSize);
 
 		btnLogout = new JButton("로그아웃");
 		btnLogout.setPreferredSize(btnSize);
@@ -81,7 +81,7 @@ public class MainForm extends JDialog {
 		southPanel.add(btnWithdraw);
 
 		JPanel centerPnl = new JPanel();
-		centerPnl.add(dbRegBtn);
+		centerPnl.add(btnDBReg);
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		mainPanel.add(new JScrollPane(check), BorderLayout.NORTH);
@@ -99,9 +99,10 @@ public class MainForm extends JDialog {
 				owner.setVisible(true);
 			}
 		});
-		dbRegBtn.addActionListener(new ActionListener() {
+		btnDBReg.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
+				btnDBReg.setEnabled(false);
 				if (owner.getVault().tokenLookupSelf() == Common.SUCCESS_CODE) {
 					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this, vault);
 
@@ -161,5 +162,9 @@ public class MainForm extends JDialog {
 		setLocationRelativeTo(owner); // loginForm이 있는 위치를 기준으로 위치를 조정함
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE); // 다이얼로그를 닫을 때 해당 다이얼로그만 닫히고 프로그램이 종료되지는 않음
 		setResizable(false); // 창 크기를 조절할 수 없도록 설정함
+	}
+
+	public void setBtnDBReg(Boolean flag) {
+		btnDBReg.setEnabled(flag);
 	}
 }
