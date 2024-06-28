@@ -1,5 +1,12 @@
 package common.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import common.Common;
 import common.model.Vault;
 
@@ -10,13 +17,41 @@ public class VaultDatabaseEngine {
         this.vault = vault;
     }
 
-    public String EngineCheck() {
+    public String engineCheck() {
         System.out.println("Database Engine Check");
         System.out.println(vault.getVaultUrl());
 
-        String token = vault.getVaultToken();
-        String url = vault.getVaultUrl() + "/v1/sys/mounts";
-        Common.request(url, token);
+        String engineList = Common.request(vault.getVaultUrl() + "/v1/sys/mounts", vault.getVaultToken());
+
+        // ObjectMapper 객체 생성
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // JSON 문자열을 Map으로 변환
+        Map<String, Object> map;
+        try {
+            map = objectMapper.readValue(
+                    engineList,
+                    new TypeReference<Map<String, Object>>() {
+                    });
+            // 중첩 값 확인
+            String nestedValue = Common.getNestedValue(map, "data", "db-manager/", "type");
+            if(nestedValue.equals("database")) {
+                System.out.println("Database Engine 활성화 상태");
+            }
+            return nestedValue;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
         return "";
+    }
+
+    
+
+    public void engineEnable() {
+        System.out.println("Database Engine Enable");
+        Map<String, String> data = new HashMap<>();
+        data.put("type", "database");
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/sys/mounts/db-manager", vault.getVaultToken(), data);
     }
 }
