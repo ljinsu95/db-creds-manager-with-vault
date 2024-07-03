@@ -110,7 +110,7 @@ public class DatabaseRegForm extends JDialog {
 		txtDBHostname = new JTextField(txtSize);
 		txtDBHostname.setText("localhost");
 		txtDBPort = new JTextField(txtSize);
-		txtDBPort.setText("localhost");
+		txtDBPort.setText("3306");
 
 		txtDBUsername = new JTextField(txtSize);
 		txtDBUsername.setText("admin");
@@ -177,6 +177,8 @@ public class DatabaseRegForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				ae.getActionCommand();
+				new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
+				
 				// MainForm mainForm = new MainForm(MainForm.this, vault);
 
 				// InformationForm informationForm = new InformationForm(LoginForm.this, title);

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Common {
-    public static String CONFIG_FILE = "common/dev.config properties";
+    public static String CONFIG_FILE = "common/dev.config.properties";
     public static Border MARGIN_10 = BorderFactory.createEmptyBorder(10, 10, 10, 10);
 
     public static int SUCCESS_CODE = 200;
@@ -27,6 +27,8 @@ public class Common {
             URL url = new URL(vaultUrl);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setConnectTimeout(2000); // 연결 타임아웃 설정 (2초)
+            connection.setReadTimeout(2000); // 읽기 타임아웃 설정 (2초)
 
             int responseCode = connection.getResponseCode();
 
@@ -128,6 +130,46 @@ public class Common {
         return "";
     }
 
+    public static String getVaultRequest(String vaultUrl, String vaultToken) {
+        HttpURLConnection connection = null;
+
+        try {
+            URL url = new URL(vaultUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-Vault-Token", vaultToken);
+            connection.setDoOutput(true);
+
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                System.out.println("Response: " + response.toString());
+                return response.toString();
+            } else {
+
+            }
+            System.out.println("Response Code: " + responseCode);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect(); // 연결 종료
+            }
+        }
+        return "";
+    }
+
+
     public static String createJson(Map<String, String> map) {
         try {
             // ObjectMapper 객체 생성
@@ -167,14 +209,14 @@ public class Common {
         return null;
     }
 
-    public static void printMap(Map<String, Object> map) {
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-            if (entry.getValue() instanceof Map) {
-                printMap((Map<String, Object>) entry.getValue());
-            }
-        }
-    }
+    // public static void printMap(Map<String, Object> map) {
+    //     for (Map.Entry<String, Object> entry : map.entrySet()) {
+    //         System.out.println(entry.getKey() + ": " + entry.getValue());
+    //         if (entry.getValue() instanceof Map) {
+    //             printMap((Map<String, Object>) entry.getValue());
+    //         }
+    //     }
+    // }
 
     // Map<String, Object>형태의 중첩 데이터 조회
     @SuppressWarnings("unchecked")
