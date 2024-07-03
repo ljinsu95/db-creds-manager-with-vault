@@ -193,35 +193,40 @@ public class LoginForm extends JFrame {
 				// Vault Login 시도
 				// Vault vault = new Vault(vaultUrl, vaultAuthType, vaultTokenTxt.getText());
 				// vault.tokenLookupSelf();
-				if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
-					System.out.println("로그인 성공");
-					System.out.println(vault.getVaultUrl());
-
-					MainForm mainForm = new MainForm(LoginForm.this, vault);
-
-					setVisible(false);
-					mainForm.setVisible(true);
-
-					Properties properties = new Properties();
-
-					try (InputStream input = new FileInputStream(common.Common.CONFIG_FILE)) {
-						// properties 파일을 읽어온다.
-						properties.load(input);
-
-						// properties 파일의 값을 업데이트한다.
-						properties.setProperty("vault.url", vault.getVaultUrl());
-						properties.setProperty("vault.auth", vault.getVaultAuthType());
-						properties.setProperty("vault.usernm", vault.getVaultUserNm());
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					}
-
-					vaultTokenTxt.setText("");
-					vaultUsernameTxt.setText("");
-					vaultPasswordTxt.setText("");
-				} else {
-					JOptionPane.showConfirmDialog(LoginForm.this, "로그인 정보가 일치하지 않습니다.", "RETRY",
+				if (!vault.healthCheck()) {
+					JOptionPane.showConfirmDialog(LoginForm.this, "Vault URL 정보가 일치하지 않습니다.", "RETRY",
 							JOptionPane.WARNING_MESSAGE);
+				} else {
+					if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+						System.out.println("로그인 성공");
+						System.out.println(vault.getVaultUrl());
+	
+						MainForm mainForm = new MainForm(LoginForm.this, vault);
+	
+						setVisible(false);
+						mainForm.setVisible(true);
+	
+						Properties properties = new Properties();
+	
+						try (InputStream input = new FileInputStream(common.Common.CONFIG_FILE)) {
+							// properties 파일을 읽어온다.
+							properties.load(input);
+	
+							// properties 파일의 값을 업데이트한다.
+							properties.setProperty("vault.url", vault.getVaultUrl());
+							properties.setProperty("vault.auth", vault.getVaultAuthType());
+							properties.setProperty("vault.usernm", vault.getVaultUserNm());
+						} catch (IOException ex) {
+							ex.printStackTrace();
+						}
+	
+						vaultTokenTxt.setText("");
+						vaultUsernameTxt.setText("");
+						vaultPasswordTxt.setText("");
+					} else {
+						JOptionPane.showConfirmDialog(LoginForm.this, "로그인 정보가 일치하지 않습니다.", "RETRY",
+								JOptionPane.WARNING_MESSAGE);
+					}
 				}
 			}
 		});
@@ -258,8 +263,10 @@ public class LoginForm extends JFrame {
 	public void showFrame() {
 		setTitle("Welcome to JAVA");
 		pack(); // 프레임의 크기를 컨텐츠에 맞게 조정
-		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때 사용
-		setLocationRelativeTo(null); // 프레임을 화면 중앙에 위치 setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); // 프레임이 닫힐 때 아무 동작도 하지 않도록 설정
+		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때
+		// 사용
+		setLocationRelativeTo(null); // 프레임을 화면 중앙에 위치 setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); // 프레임이 닫힐 때 아무
+										// 동작도 하지 않도록 설정
 		setResizable(false); // 프레임의 크기 고정
 		setVisible(true);
 		updateAuthParamPnl(vaultAuthType);

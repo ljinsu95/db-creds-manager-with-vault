@@ -4,6 +4,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.Common;
 
@@ -102,9 +107,34 @@ public class Vault {
     }
 
     // Vault status
-    public String vaultStatus() {
+    public boolean healthCheck() {
         System.out.println("vault url : "+getVaultUrl());
-        return Common.request("https://"+getVaultUrl()+"/v1/sys/seal-status");
+        String jsonResult = Common.request(getVaultUrl()+"/v1/sys/health");
+
+        if (jsonResult.isEmpty()) {
+            System.out.println("Vault Health Error");
+            return false;
+        }
+        // ObjectMapper 객체 생성
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // JSON 문자열을 Map으로 변환
+        Map<String, Object> map;
+        try {
+            map = objectMapper.readValue(
+                    jsonResult,
+                    new TypeReference<Map<String, Object>>() {
+                    });
+            // 중첩 값 확인
+            String nestedValue = Common.getNestedValue(map, "sealed");
+            if (nestedValue.equals("false")) {
+                System.out.println("Vault Health OK");
+            }
+            return true;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // token login
