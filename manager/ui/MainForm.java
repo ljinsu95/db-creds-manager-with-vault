@@ -4,27 +4,32 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
+
+import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 
 import common.Common;
 import common.model.Vault;
-
-// 로그인 성공 시 개인 정보가 출력되는 GUI 화면 
-// LOGOUT 과 WITHDRAW 기능
-// LOGOUT 클릭 시 LOGINFORM 화면으로 이동
-// WITHDRAW 클릭 시 탈퇴 및 정보 삭제
+import common.service.VaultDatabaseEngine;
 
 public class MainForm extends JDialog {
 	private Vault vault;
@@ -32,6 +37,11 @@ public class MainForm extends JDialog {
 	private LoginForm owner;
 	// private UsersData users;
 	private String userId;
+
+	private JScrollPane scrollPane;
+	private JTable tbDb;
+	private JLabel lblDetail;
+
 	private JTextArea check;
 
 	private JButton btnDBReg;
@@ -56,7 +66,38 @@ public class MainForm extends JDialog {
 	}
 
 	private void init() {
+		String[] configs = new VaultDatabaseEngine(vault).configList();
+
+		System.out.println("config : " + configs.toString());
+
+		
+
+
+
+		//
+
 		Dimension btnSize = new Dimension(100, 25);
+
+		// 테이블 모델 생성
+        DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"DB Type"}, 0);
+        for (int i = 0; i < configs.length; i++) {
+            tableModel.addRow(new Object[]{configs[i]});
+        }
+
+		// JTable 생성
+        tbDb = new JTable(tableModel);
+        tbDb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		// tbDb.setSize(btnSize);
+
+		// JScrollPane 생성 및 JTable 추가
+        scrollPane = new JScrollPane(tbDb);
+		scrollPane.setPreferredSize(new Dimension(200, 100));
+
+		// 상세 내용을 표시할 JLabel 생성
+        lblDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
+        lblDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		
+		//
 
 		check = new JTextArea(10, 30);
 		check.setEditable(false);
@@ -76,6 +117,10 @@ public class MainForm extends JDialog {
 		TitledBorder border = new TitledBorder(lBorder, "안녕하세요! 본인의 정보를 확인 할 수 있습니다");
 		check.setBorder(border);
 
+		JPanel pnlNorth = new JPanel(new GridLayout(0, 1));
+		pnlNorth.add(scrollPane);
+		// pnlNorth.add(lblDetail);
+
 		JPanel southPanel = new JPanel();
 		southPanel.add(btnLogout);
 		southPanel.add(btnWithdraw);
@@ -84,8 +129,10 @@ public class MainForm extends JDialog {
 		centerPnl.add(btnDBReg);
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		mainPanel.add(new JScrollPane(check), BorderLayout.NORTH);
-		mainPanel.add(centerPnl, BorderLayout.CENTER);
+		mainPanel.add(scrollPane, BorderLayout.WEST);
+		mainPanel.add(lblDetail, BorderLayout.CENTER);
+		// mainPanel.add(new JScrollPane(check), BorderLayout.NORTH);
+		mainPanel.add(centerPnl, BorderLayout.EAST);
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 
 		add(mainPanel, BorderLayout.CENTER);
@@ -114,32 +161,18 @@ public class MainForm extends JDialog {
 			}
 		});
 
-		btnWithdraw.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent ae) {
-				try {
-					// 예외처리 추가
-					String userId = MainForm.this.userId;
-					if (userId != null && !userId.isEmpty()) {
-						// System.out.println("Withdraw button clicked: " + userId);
-						// User 객체를 생성하여 ID 가져오기
-						User userForWithdraw = new User(userId);
-						// withdraw 메서드 호출
-						users.withdraw(userForWithdraw.getId());
-
-						JOptionPane.showMessageDialog(MainForm.this, "회원 정보가 삭제되었습니다" + "\n" + "다음에 또 만나요!", "BYE JAVA",
-								JOptionPane.PLAIN_MESSAGE);
-						dispose();
-						owner.setVisible(true);
-					} else {
-						System.out.println("Withdraw button clicked: userId is null or empty");
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		// JTable에 마우스 이벤트 리스너 추가
+        tbDb.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int row = tbDb.rowAtPoint(e.getPoint());
+                int col = tbDb.columnAtPoint(e.getPoint());
+                if (row != -1 && col != -1) {
+                    Object value = tbDb.getValueAt(row, col);
+                    lblDetail.setText("상세 내용: " + value.toString());
+                }
+            }
+        });
 
 		btnLogout.addActionListener(new ActionListener() {
 
