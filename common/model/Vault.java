@@ -109,7 +109,7 @@ public class Vault {
     // Vault status
     public boolean healthCheck() {
         System.out.println("vault url : "+getVaultUrl());
-        String jsonResult = Common.request(getVaultUrl()+"/v1/sys/health");
+        String jsonResult = Common.request(getVaultUrl()+"/v1/sys/health?perfstandbyok=true&&standbyok=true");
 
         if (jsonResult.isEmpty()) {
             System.out.println("Vault Health Error");
