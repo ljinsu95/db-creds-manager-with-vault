@@ -4,6 +4,7 @@ Vault 기반 Database 계정 발급 프로그램
 ## 프로세스
 ### 관리자
 1. 관리자 로그인
+    - vault read sys/health
     - vault login
 2. 사용자 생성
     - vault auth enable -path=db-userpass userpass
@@ -12,6 +13,7 @@ Vault 기반 Database 계정 발급 프로그램
     - vault secrets enable -path=db-manager database
 ### 사용자
 1. 사용자 로그인
+    - vault read sys/health
     - vault login -method=db-userpass -username=$USER_NAME -password=$USER_PW
 2. DB 계정 발급
     - vault write db-manager/creds/$USER_NAME
