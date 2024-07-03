@@ -68,9 +68,12 @@ public class VaultDatabaseEngine {
     // Database Engine Config List 확인
     public String[] configList() {
         System.out.println("Database Config List");
-        String jsonConfigList = Common.getVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config?list=true",
+        String jsonConfigList = Common.getVaultRequest(vault.getVaultUrl() + "/v1/db-manager2/config?list=true",
                 vault.getVaultToken());
         
+        if(jsonConfigList.isBlank()) {
+            return new String[0];
+        }
         // ObjectMapper 객체 생성
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -95,6 +98,6 @@ public class VaultDatabaseEngine {
             e.printStackTrace();
         }
 
-        return null;
+        return new String[0];
     }
 }
