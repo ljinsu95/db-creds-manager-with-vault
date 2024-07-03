@@ -18,3 +18,4 @@ Vault 기반 Database 계정 발급 프로그램
 2. DB 계정 발급
     - vault write db-manager/creds/$USER_NAME
     
+test
