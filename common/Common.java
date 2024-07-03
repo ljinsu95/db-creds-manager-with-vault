@@ -21,6 +21,7 @@ public class Common {
     public static int SUCCESS_CODE = 200;
 
     public static String request(String vaultUrl) {
+        System.out.println("호출 URL : " + vaultUrl);
         HttpURLConnection connection = null;
 
         try {
