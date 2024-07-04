@@ -10,16 +10,20 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -35,7 +39,10 @@ public class LoginForm extends JFrame {
 
 	private String vaultUrl = "http://127.0.0.1:8200";
 	private String vaultAuthType;
-	private String VaultUsernm;
+	private String vaultToken;
+	private String vaultUsernm;
+	private String vaultUserpw;
+	private String loginInfoSave;
 
 	private String vaultAuthList[] = { Vault.AUTH_TOKEN, Vault.AUTH_USERNAME };
 
@@ -48,7 +55,7 @@ public class LoginForm extends JFrame {
 	private JTextField vaultUrlTxt;
 	private ButtonGroup btnGroup;
 	private JRadioButton rbtnAuth[];
-	private JTextField vaultTokenTxt;
+	private JPasswordField vaultTokenTxt;
 	private JTextField vaultUsernameTxt;
 	private JTextField vaultPasswordTxt;
 
@@ -57,6 +64,9 @@ public class LoginForm extends JFrame {
 	private JPanel usernamePnl;
 	private JPanel passwordPnl;
 	private JPanel tokenPnl;
+
+	private JCheckBox cbAuthInfoSave;
+
 	private JButton logBtn;
 	private JButton joinBtn;
 	private LayoutManager flowLeft;
@@ -82,10 +92,11 @@ public class LoginForm extends JFrame {
 			// properties 파일의 값을 출력한다.
 			vaultUrl = properties.getProperty("vault.url");
 			vaultAuthType = properties.getProperty("vault.auth");
+			vaultToken = properties.getProperty("vault.token");
+			vaultUsernm = properties.getProperty("vault.usernm");
+			vaultUserpw = properties.getProperty("vault.userpw");
+			loginInfoSave = properties.getProperty("login.info.save");
 			vault.setVaultAuthType(vaultAuthType);
-			// setToken(properties.getProperty("vault.token"));
-			VaultUsernm = properties.getProperty("vault.usernm");
-			// String userpw = properties.getProperty("vault.userpw");
 			System.out.println("Vault URL: " + vaultUrl);
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -125,9 +136,16 @@ public class LoginForm extends JFrame {
 		vaultUrlTxt.setText(vaultUrl);
 
 		vaultUsernameTxt = new JTextField(txtSize);
-		vaultUsernameTxt.setText(VaultUsernm);
+		vaultUsernameTxt.setText(vaultUsernm);
 		vaultPasswordTxt = new JTextField(txtSize);
-		vaultTokenTxt = new JTextField(txtSize);
+		vaultPasswordTxt.setText(vaultUserpw);
+		vaultTokenTxt = new JPasswordField(txtSize);
+		vaultTokenTxt.setText(vaultToken);
+
+		cbAuthInfoSave = new JCheckBox("로그인 정보 저장");
+		if(loginInfoSave.equals("true")) {
+			cbAuthInfoSave.setSelected(true);
+		}
 
 		logBtn = new JButton("로그인");
 		logBtn.setPreferredSize(btnSize);
@@ -167,9 +185,14 @@ public class LoginForm extends JFrame {
 		northPanel.add(passwordPnl);
 		// northPanel.add(tokenPnl);
 
-		JPanel southPanel = new JPanel();
-		southPanel.add(logBtn);
-		southPanel.add(joinBtn);
+		JPanel southPanel = new JPanel(new GridLayout());
+
+		JPanel pnlLogin = new JPanel(flowLeft);
+		pnlLogin.add(logBtn);
+		pnlLogin.add(joinBtn);
+
+		southPanel.add(cbAuthInfoSave);
+		southPanel.add(pnlLogin);
 
 		northPanel.setBorder(new EmptyBorder(0, 20, 0, 20));
 		southPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
@@ -190,13 +213,12 @@ public class LoginForm extends JFrame {
 				vault.setVaultUserNm(vaultUsernameTxt.getText());
 				vault.setVaultUesrPw(vaultPasswordTxt.getText());
 
-				// Vault Login 시도
-				// Vault vault = new Vault(vaultUrl, vaultAuthType, vaultTokenTxt.getText());
-				// vault.tokenLookupSelf();
+				// Vault URL Health Check
 				if (!vault.healthCheck()) {
 					JOptionPane.showConfirmDialog(LoginForm.this, "Vault URL 정보가 일치하지 않습니다.", "RETRY",
-							JOptionPane.WARNING_MESSAGE);
+					JOptionPane.WARNING_MESSAGE);
 				} else {
+					// Vault Login 시도
 					if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
 						System.out.println("로그인 성공");
 						System.out.println(vault.getVaultUrl());
@@ -216,6 +238,22 @@ public class LoginForm extends JFrame {
 							properties.setProperty("vault.url", vault.getVaultUrl());
 							properties.setProperty("vault.auth", vault.getVaultAuthType());
 							properties.setProperty("vault.usernm", vault.getVaultUserNm());
+							if (cbAuthInfoSave.isSelected()) {
+								properties.setProperty("vault.token", vault.getVaultToken());
+								properties.setProperty("login.info.save", "true");
+							} else {
+								properties.setProperty("vault.token", "");
+								properties.setProperty("login.info.save", "false");
+							}
+							// Save the updated properties back to the file
+							try (OutputStream output = new FileOutputStream(common.Common.CONFIG_FILE)) {
+								properties.store(output, null);
+
+								System.out.println("Updated properties saved to " + common.Common.CONFIG_FILE);
+
+							} catch (IOException io) {
+								io.printStackTrace();
+							}
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
