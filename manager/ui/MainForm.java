@@ -3,7 +3,6 @@ package manager.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,15 +29,14 @@ import javax.swing.table.DefaultTableModel;
 import common.Common;
 import common.model.Vault;
 import common.service.VaultDatabaseEngine;
+import common.service.VaultUserpassAuth;
 
 public class MainForm extends JDialog {
 	private Vault vault;
 
 	private LoginForm owner;
-	// private UsersData users;
-	private String userId;
 
-	private JScrollPane scrollPane;
+	private JScrollPane spDb;
 	private JTable tbDb;
 	private JLabel lblDetail;
 
@@ -46,17 +44,18 @@ public class MainForm extends JDialog {
 
 	private JButton btnDBReg;
 
+	// user pnl
+	private JScrollPane spUser;
+	private JTable tbUser;
+	private JLabel lblUserDetail;
+	private JButton btnUserReg;
+
 	private JButton btnLogout;
 	private JButton btnWithdraw;
 
 	public MainForm(LoginForm owner, Vault vault) {
 		this.owner = owner;
 		this.vault = vault;
-		//  this.userId = owner.getidTxt(); // 사용자 ID 저장
-	    //  this.users = owner.getUsers();
-//		super(owner, "HELLO JAVA", true);
-//		this.owner = owner;
-//		users = owner.getUsers();
 		
 		init();
 		setDisplay();
@@ -66,44 +65,73 @@ public class MainForm extends JDialog {
 	}
 
 	private void init() {
+		/* DB config 목록 조회 */
 		String[] configs = new VaultDatabaseEngine(vault).configList();
-
 		System.out.println("config : " + configs.toString());
-
 		
+		/* User 목록 조회 */
+		String[] users = new VaultUserpassAuth(vault).userList();
+		System.out.println("config : " + users.toString());
 
+		/* 지워도 됩니다. Auth Check 동작 확인용 */
+		System.out.println("auth check : " + new VaultUserpassAuth(vault).authCheck());
 
-
-		//
-
+		/* 버튼 사이즈 통일 */
 		Dimension btnSize = new Dimension(100, 25);
 
-		// 테이블 모델 생성
+		/* DB List 출력 화면 Start */
+		/* DB List 화면 */
         DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"DB Type"}, 0);
         for (int i = 0; i < configs.length; i++) {
-            tableModel.addRow(new Object[]{configs[i]});
+			tableModel.addRow(new Object[]{configs[i]});
         }
-
-		// JTable 생성
         tbDb = new JTable(tableModel);
         tbDb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// tbDb.setSize(btnSize);
-
-		// JScrollPane 생성 및 JTable 추가
-        scrollPane = new JScrollPane(tbDb);
-		scrollPane.setPreferredSize(new Dimension(200, 100));
-
-		// 상세 내용을 표시할 JLabel 생성
+		
+		/* 스크롤 추가 */
+        spDb = new JScrollPane(tbDb);
+		spDb.setPreferredSize(new Dimension(200, 100));
+		
+		/* 상세 내용 출력 레이블 */
         lblDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
         lblDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		
-		//
-
+		/* DB 등록 버튼 */
+		// TODO : 등록 버튼 색상 변경 필요
+		btnDBReg = new JButton("DB 등록");
+		btnDBReg.setPreferredSize(btnSize);
+		/* DB List 출력 화면 End */
+		
+		
+		/* User List 출력 화면 Start */
+		// 테이블 모델 생성
+		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		for (int i = 0; i < users.length; i++) {
+			dtmUserList.addRow(new Object[]{users[i]});
+		}
+		
+		// JTable 생성
+		tbUser = new JTable(dtmUserList);
+		tbUser.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		// tbDb.setSize(btnSize);
+		
+		// JScrollPane 생성 및 JTable 추가
+		spUser = new JScrollPane(tbUser);
+		spUser.setPreferredSize(new Dimension(200, 100));
+		
+		// 상세 내용을 표시할 JLabel 생성
+		lblUserDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
+		lblUserDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		
+		btnUserReg = new JButton("User 등록");
+		btnUserReg.setPreferredSize(btnSize);
+		/* User List 출력 화면 End */
+		
+		
 		check = new JTextArea(10, 30);
 		check.setEditable(false);
 
-		btnDBReg = new JButton("DB 등록");
-		btnDBReg.setPreferredSize(btnSize);
 
 		btnLogout = new JButton("로그아웃");
 		btnLogout.setPreferredSize(btnSize);
@@ -118,21 +146,42 @@ public class MainForm extends JDialog {
 		check.setBorder(border);
 
 		JPanel pnlNorth = new JPanel(new GridLayout(0, 1));
-		pnlNorth.add(scrollPane);
+		pnlNorth.add(spDb);
 		// pnlNorth.add(lblDetail);
 
 		JPanel southPanel = new JPanel();
 		southPanel.add(btnLogout);
 		southPanel.add(btnWithdraw);
 
-		JPanel centerPnl = new JPanel();
-		centerPnl.add(btnDBReg);
+		JPanel pnlCenter = new JPanel(new BorderLayout());
+
+		// DB Pnl
+		JPanel pnlCNorth = new JPanel(new BorderLayout());
+
+		JPanel pnlCNEast = new JPanel();
+		pnlCNEast.add(btnDBReg);
+
+		pnlCNorth.add(spDb, BorderLayout.WEST);
+		pnlCNorth.add(lblDetail, BorderLayout.CENTER);
+		// pnlCenNorth.add(new JScrollPane(check), BorderLayout.NORTH);
+		pnlCNorth.add(pnlCNEast, BorderLayout.EAST);
+
+		// User Pnl
+		JPanel pnlCCenter = new JPanel(new BorderLayout());
+
+		JPanel pnlCCEast = new JPanel();
+		pnlCCEast.add(btnUserReg);
+
+		pnlCCenter.add(spUser, BorderLayout.WEST);
+		pnlCCenter.add(lblUserDetail, BorderLayout.CENTER);
+		pnlCCenter.add(pnlCCEast, BorderLayout.EAST);
+
+		pnlCenter.add(pnlCNorth, BorderLayout.NORTH);
+		pnlCenter.add(pnlCCenter, BorderLayout.CENTER);
+
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
-		mainPanel.add(scrollPane, BorderLayout.WEST);
-		mainPanel.add(lblDetail, BorderLayout.CENTER);
-		// mainPanel.add(new JScrollPane(check), BorderLayout.NORTH);
-		mainPanel.add(centerPnl, BorderLayout.EAST);
+		mainPanel.add(pnlCenter, BorderLayout.CENTER);
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 
 		add(mainPanel, BorderLayout.CENTER);
@@ -149,7 +198,7 @@ public class MainForm extends JDialog {
 		btnDBReg.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				btnDBReg.setEnabled(false);
+				setBtnDBReg(false);
 				if (owner.getVault().tokenLookupSelf() == Common.SUCCESS_CODE) {
 					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this, vault);
 
@@ -157,6 +206,22 @@ public class MainForm extends JDialog {
 					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
 					setVisible(false);
 					mainForm.setVisible(true);
+				}
+			}
+		});
+
+		/* 사용자 등록 */
+		btnUserReg.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				setBtnUserReg(false);
+				if (owner.getVault().tokenLookupSelf() == Common.SUCCESS_CODE) {
+					UserRegForm userRegForm = new UserRegForm(MainForm.this, vault);
+
+					// InformationForm informationForm = new InformationForm(LoginForm.this, title);
+					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
+					setVisible(false);
+					userRegForm.setVisible(true);
 				}
 			}
 		});
@@ -175,7 +240,6 @@ public class MainForm extends JDialog {
         });
 
 		btnLogout.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(MainForm.this, "로그아웃 되었습니다" + "\n" + "다음에 또 만나요!", "BYE JAVA",
@@ -199,5 +263,9 @@ public class MainForm extends JDialog {
 
 	public void setBtnDBReg(Boolean flag) {
 		btnDBReg.setEnabled(flag);
+	}
+
+	public void setBtnUserReg(Boolean flag) {
+		btnUserReg.setEnabled(flag);
 	}
 }

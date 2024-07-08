@@ -70,6 +70,7 @@ public class LoginForm extends JFrame {
 	private JButton logBtn;
 	private JButton joinBtn;
 	private LayoutManager flowLeft;
+	private LayoutManager flowRight;
 
 	public LoginForm() {
 		init();
@@ -156,6 +157,7 @@ public class LoginForm extends JFrame {
 	public void setDisplay() {
 		// 컴포넌트를 왼쪽 정렬로 배치
 		flowLeft = new FlowLayout(FlowLayout.LEFT);
+		flowRight = new FlowLayout(FlowLayout.RIGHT);
 
 		northPanel = new JPanel(new GridLayout(0, 1));
 
@@ -185,17 +187,17 @@ public class LoginForm extends JFrame {
 		northPanel.add(passwordPnl);
 		// northPanel.add(tokenPnl);
 
-		JPanel southPanel = new JPanel(new GridLayout());
+		JPanel southPanel = new JPanel(new BorderLayout());
 
-		JPanel pnlLogin = new JPanel(flowLeft);
+		JPanel pnlLogin = new JPanel(flowRight);
 		pnlLogin.add(logBtn);
 		pnlLogin.add(joinBtn);
 
-		southPanel.add(cbAuthInfoSave);
-		southPanel.add(pnlLogin);
+		southPanel.add(cbAuthInfoSave, BorderLayout.WEST);
+		southPanel.add(pnlLogin, BorderLayout.EAST);
 
 		northPanel.setBorder(new EmptyBorder(0, 20, 0, 20));
-		southPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+		southPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
 
 		add(northPanel, BorderLayout.NORTH);
 		add(southPanel, BorderLayout.SOUTH);
@@ -209,7 +211,7 @@ public class LoginForm extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				// vault 객체 정보 설정
 				vault.setVaultUrl(vaultUrlTxt.getText());
-				vault.setVaultToken(vaultTokenTxt.getText());
+				vault.setVaultToken(String.valueOf(vaultTokenTxt.getPassword()));
 				vault.setVaultUserNm(vaultUsernameTxt.getText());
 				vault.setVaultUesrPw(vaultPasswordTxt.getText());
 
@@ -244,6 +246,10 @@ public class LoginForm extends JFrame {
 							} else {
 								properties.setProperty("vault.token", "");
 								properties.setProperty("login.info.save", "false");
+								
+								vaultTokenTxt.setText("");
+								vaultUsernameTxt.setText("");
+								vaultPasswordTxt.setText("");
 							}
 							// Save the updated properties back to the file
 							try (OutputStream output = new FileOutputStream(common.Common.CONFIG_FILE)) {
@@ -257,10 +263,6 @@ public class LoginForm extends JFrame {
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
-	
-						vaultTokenTxt.setText("");
-						vaultUsernameTxt.setText("");
-						vaultPasswordTxt.setText("");
 					} else {
 						JOptionPane.showConfirmDialog(LoginForm.this, "로그인 정보가 일치하지 않습니다.", "RETRY",
 								JOptionPane.WARNING_MESSAGE);

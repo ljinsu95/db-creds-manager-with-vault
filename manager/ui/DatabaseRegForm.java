@@ -16,7 +16,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -183,24 +182,22 @@ public class DatabaseRegForm extends JDialog {
 
 				// InformationForm informationForm = new InformationForm(LoginForm.this, title);
 				// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
-				setVisible(false);
+				dispose();
 				owner.setVisible(true);
 				owner.setBtnDBReg(true);
 				// mainForm.setVisible(true);
 			}
 		});
 
-		// btnLogout.addActionListener(new ActionListener() {
 
-		// @Override
-		// public void actionPerformed(ActionEvent e) {
-		// JOptionPane.showMessageDialog(MainForm.this, "로그아웃 되었습니다" + "\n" + "다음에 또
-		// 만나요!", "BYE JAVA",
-		// JOptionPane.PLAIN_MESSAGE);
-		// dispose();
-		// owner.setVisible(true);
-		// }
-		// });
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ae.getActionCommand();
+				dispose();
+				owner.setVisible(true);
+            }
+        });
 	}
 
 	private void showFrame() {
