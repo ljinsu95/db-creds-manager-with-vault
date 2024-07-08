@@ -27,6 +27,8 @@ public class Vault {
     private String dbUserNm;
     private String dbUserPw;
 
+    private String accessor;
+
     public Vault() {
 
     }
@@ -104,6 +106,14 @@ public class Vault {
 
     public void setDbUserPw(String dbUserPw) {
         this.dbUserPw = dbUserPw;
+    }
+
+    public String getAccessor() {
+        return accessor;
+    }
+
+    public void setAccessor(String accessor) {
+        this.accessor = accessor;
     }
 
     // Vault status
