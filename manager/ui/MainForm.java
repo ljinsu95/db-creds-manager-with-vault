@@ -49,6 +49,7 @@ public class MainForm extends JDialog {
 	private JTable tbUser;
 	private JLabel lblUserDetail;
 	private JButton btnUserReg;
+	private JPanel pnlUser;
 
 	private JButton btnLogout;
 	private JButton btnWithdraw;
@@ -167,17 +168,17 @@ public class MainForm extends JDialog {
 		pnlCNorth.add(pnlCNEast, BorderLayout.EAST);
 
 		// User Pnl
-		JPanel pnlCCenter = new JPanel(new BorderLayout());
+		pnlUser = new JPanel(new BorderLayout());
 
 		JPanel pnlCCEast = new JPanel();
 		pnlCCEast.add(btnUserReg);
 
-		pnlCCenter.add(spUser, BorderLayout.WEST);
-		pnlCCenter.add(lblUserDetail, BorderLayout.CENTER);
-		pnlCCenter.add(pnlCCEast, BorderLayout.EAST);
+		pnlUser.add(spUser, BorderLayout.WEST);
+		pnlUser.add(lblUserDetail, BorderLayout.CENTER);
+		pnlUser.add(pnlCCEast, BorderLayout.EAST);
 
 		pnlCenter.add(pnlCNorth, BorderLayout.NORTH);
-		pnlCenter.add(pnlCCenter, BorderLayout.CENTER);
+		pnlCenter.add(pnlUser, BorderLayout.CENTER);
 
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
@@ -261,10 +262,33 @@ public class MainForm extends JDialog {
 		setResizable(false); // 창 크기를 조절할 수 없도록 설정함
 	}
 
+	/* User 추가 후 리스트 업데이트 */
+	public void updatePnlUser() {
+		/* User 목록 조회 */
+		String[] users = new VaultUserpassAuth(vault).userList();
+		System.out.println("config : " + users.toString());
+
+		// spUser.remove(tbUser);
+		// 테이블 모델 생성
+		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		for (int i = 0; i < users.length; i++) {
+			dtmUserList.addRow(new Object[]{users[i]});
+		}
+
+		// JTable 생성
+		tbUser = new JTable(dtmUserList);
+		tbUser.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		// JScrollPane 업데이트
+		spUser.setViewportView(tbUser);
+	}
+
+	/* DB 등록버튼 ON/OFF */
 	public void setBtnDBReg(Boolean flag) {
 		btnDBReg.setEnabled(flag);
 	}
-
+	
+	/* USER 등록버튼 ON/OFF */
 	public void setBtnUserReg(Boolean flag) {
 		btnUserReg.setEnabled(flag);
 	}

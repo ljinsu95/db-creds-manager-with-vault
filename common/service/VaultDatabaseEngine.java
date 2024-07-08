@@ -44,7 +44,7 @@ public class VaultDatabaseEngine {
             e.printStackTrace();
         }
 
-        return "";
+        return null;
     }
 
     public void engineEnable() throws VaultException {

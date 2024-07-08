@@ -141,6 +141,7 @@ public class UserRegForm extends JDialog {
                     e.getStackTrace();
                 }
 				dispose();
+                owner.updatePnlUser();
 				owner.setVisible(true);
 				owner.setBtnUserReg(true);
             }
