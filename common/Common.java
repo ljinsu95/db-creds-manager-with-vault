@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -86,8 +87,10 @@ public class Common {
     }
 
     public static String postVaultRequest(String vaultUrl, String vaultToken, Map<String, String> data) {
+        System.out.println("호출 URL : " + vaultUrl);
         HttpURLConnection connection = null;
 
+        /* Request Body Data Map -> Json */
         String requestBody = createJson(data);
 
         try {
@@ -104,7 +107,8 @@ public class Common {
             }
 
             int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            System.out.println("Response Code: " + responseCode);
+            if (responseCode >= 200 && responseCode < 300) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder response = new StringBuilder();
                 String inputLine;
@@ -117,9 +121,17 @@ public class Common {
                 System.out.println("Response: " + response.toString());
                 return response.toString();
             } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
 
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                System.out.println("Response: " + response.toString());
             }
-            System.out.println("Response Code: " + responseCode);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -218,6 +230,44 @@ public class Common {
     //         }
     //     }
     // }
+
+    @SuppressWarnings("unchecked")
+    public static String[] getJsonNestedValue(String strJson, String... keys) {
+        System.out.println("## JSON DATA : " + strJson);
+        // ObjectMapper 객체 생성
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // JSON 문자열을 Map으로 변환
+        Map<String, Object> map;
+        try {
+            map = objectMapper.readValue(
+                    strJson,
+                    new TypeReference<Map<String, Object>>() {
+                    });
+            // 중첩 값 확인
+            Object value = map;
+            for (String key : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<String, Object>) value).get(key);
+                } else {
+                    return null;
+                }
+            }
+            String nestedValue = value != null ? value.toString() : null;
+            
+            System.out.println("config list : " + nestedValue);
+
+            // 대괄호 제거 및 공백 제거
+            nestedValue = nestedValue.substring(1, nestedValue.length() - 1).replace(" ", "");
+
+            // 콤마를 기준으로 분리
+            String[] items = nestedValue.split(",");
+            return items;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     // Map<String, Object>형태의 중첩 데이터 조회
     @SuppressWarnings("unchecked")

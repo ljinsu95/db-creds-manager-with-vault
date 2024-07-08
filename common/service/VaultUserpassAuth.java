@@ -1,6 +1,8 @@
 package common.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -86,6 +88,14 @@ public class VaultUserpassAuth {
 
             // 콤마를 기준으로 분리
             String[] items = nestedValue.split(",");
+
+            // 유저 목록을 vault 객체에 저장
+            List<String> userList = new ArrayList<String>();
+            for (String user : items) {
+                userList.add(user);
+            }
+            vault.setUserList(userList);
+            
             return items;
         } catch (JsonProcessingException e) {
             e.printStackTrace();

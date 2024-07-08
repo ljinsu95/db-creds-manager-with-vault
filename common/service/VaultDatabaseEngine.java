@@ -62,7 +62,7 @@ public class VaultDatabaseEngine {
         data.put("allowed_roles", "*");
         data.put("username", dbUserNm);
         data.put("password", dbUserPw);
-        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config/" + dbType + "2", vault.getVaultToken(), data);
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config/" + dbType, vault.getVaultToken(), data);
     }
 
     // Database Engine Config List 확인
@@ -100,4 +100,18 @@ public class VaultDatabaseEngine {
 
         return new String[0];
     }
+
+    /* 
+     * DB Dynamic Role 생성
+     */
+    public void roleCreate(String userName, String dbName, String creationStatements) {
+        System.out.println("Database Role Create");
+        creationStatements.replace("{{name}}", userName);
+        Map<String, String> data = new HashMap<>();
+        data.put("db_name", dbName);
+        data.put("creation_statements", creationStatements);
+        data.put("default_ttl", "20m");
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/roles/" + dbName + "-" + userName, vault.getVaultToken(), data);
+
+    } 
 }

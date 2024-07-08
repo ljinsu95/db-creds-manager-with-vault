@@ -16,16 +16,13 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import common.model.Vault;
 import common.service.VaultDatabaseEngine;
-
-// 로그인 성공 시 개인 정보가 출력되는 GUI 화면 
-// LOGOUT 과 WITHDRAW 기능
-// LOGOUT 클릭 시 LOGINFORM 화면으로 이동
-// WITHDRAW 클릭 시 탈퇴 및 정보 삭제
 
 public class DatabaseRegForm extends JDialog {
 	private Vault vault;
@@ -39,6 +36,7 @@ public class DatabaseRegForm extends JDialog {
 	private JLabel lblDBPort;
 	private JLabel lblDBUsername;
 	private JLabel lblDBPassword;
+	private JLabel lblCreationStatements;
 
 	private ButtonGroup btnGroup;
 	private JRadioButton rbtnAuth[];
@@ -49,7 +47,11 @@ public class DatabaseRegForm extends JDialog {
 	private JTextField txtDBUsername;
 	private JTextField txtDBPassword;
 
+	private JScrollPane spCreationStatements;
+	private JTextArea taCreationStatements;
+
 	private JPanel northPanel;
+	private JPanel pnlCenter;
 
 	private JPanel usernamePnl;
 	private JPanel passwordPnl;
@@ -76,8 +78,8 @@ public class DatabaseRegForm extends JDialog {
 		}
 
 		// 사이즈 통일
-		Dimension labelSize = new Dimension(120, 30);
-		int txtSize = 20;
+		Dimension labelSize = new Dimension(180, 30);
+		int txtSize = 40;
 		Dimension btnSize = new Dimension(100, 25);
 
 		// 레이블 설정
@@ -91,6 +93,8 @@ public class DatabaseRegForm extends JDialog {
 		lblDBUsername.setPreferredSize(labelSize);
 		lblDBPassword = new JLabel("DB Password : ");
 		lblDBPassword.setPreferredSize(labelSize);
+		lblCreationStatements = new JLabel("Creation Statements : ");
+		lblCreationStatements.setPreferredSize(labelSize);
 
 		// 필드 설정
 		txtDBType = new JTextField(txtSize);
@@ -114,6 +118,14 @@ public class DatabaseRegForm extends JDialog {
 		txtDBUsername = new JTextField(txtSize);
 		txtDBUsername.setText("admin");
 		txtDBPassword = new JTextField(txtSize);
+		taCreationStatements = new JTextArea(5, txtSize);
+		taCreationStatements.setText("CREATE USER '{{name}}'@'%' IDENTIFIED BY '{{password}}';\nGRANT SELECT ON *.* TO '{{name}}'@'%';");
+		taCreationStatements.setLineWrap(false); // 줄 바꿈 비활성화
+
+		spCreationStatements = new JScrollPane(taCreationStatements);
+		spCreationStatements.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        spCreationStatements.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
 
 		btnDBReg = new JButton("DB 등록");
 		btnDBReg.setPreferredSize(btnSize);
@@ -129,6 +141,11 @@ public class DatabaseRegForm extends JDialog {
 		flowLeft = new FlowLayout(FlowLayout.LEFT);
 
 		northPanel = new JPanel(new GridLayout(0, 1));
+		pnlCenter = new JPanel(new GridLayout(0, 1));
+
+		JPanel pnlDbType = new JPanel(flowLeft);
+		pnlDbType.add(lblDBType);
+		pnlDbType.add(txtDBType);
 
 		JPanel pnlHostname = new JPanel(flowLeft);
 		pnlHostname.add(lblDBHostname);
@@ -145,11 +162,18 @@ public class DatabaseRegForm extends JDialog {
 		JPanel pnlpassword = new JPanel(flowLeft);
 		pnlpassword.add(lblDBPassword);
 		pnlpassword.add(txtDBPassword);
-
+		
+		northPanel.add(pnlDbType);
 		northPanel.add(pnlHostname);
 		northPanel.add(pnlPort);
 		northPanel.add(pnlUsername);
 		northPanel.add(pnlpassword);
+
+		JPanel pnlStatements = new JPanel(flowLeft);
+		pnlStatements.add(lblCreationStatements);
+		pnlStatements.add(spCreationStatements);
+		
+		pnlCenter.add(pnlStatements);
 		// northPanel.add(tokenPnl);
 
 		JPanel southPanel = new JPanel();
@@ -157,9 +181,11 @@ public class DatabaseRegForm extends JDialog {
 		southPanel.add(btnCancel);
 
 		northPanel.setBorder(new EmptyBorder(0, 20, 0, 20));
+		pnlCenter.setBorder(new EmptyBorder(0, 20, 0, 20));
 		southPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
 
 		add(northPanel, BorderLayout.NORTH);
+		add(pnlCenter, BorderLayout.CENTER);
 		add(southPanel, BorderLayout.SOUTH);
 	}
 
@@ -176,8 +202,13 @@ public class DatabaseRegForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				ae.getActionCommand();
+				// TODO : 실패 시 예외처리 필요
 				new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
-				
+
+				// 사용자 전용 role 생성
+				for (String user : vault.getUserList()) {
+					new VaultDatabaseEngine(vault).roleCreate(user, txtDBType.getText(), taCreationStatements.getText());
+				}
 				// MainForm mainForm = new MainForm(MainForm.this, vault);
 
 				// InformationForm informationForm = new InformationForm(LoginForm.this, title);

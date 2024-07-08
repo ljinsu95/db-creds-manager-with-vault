@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,6 +29,8 @@ public class Vault {
     private String dbUserPw;
 
     private String accessor;
+    private List<String> userList;
+    private List<String> dbConfigList;
 
     public Vault() {
 
@@ -114,6 +117,22 @@ public class Vault {
 
     public void setAccessor(String accessor) {
         this.accessor = accessor;
+    }
+
+    public List<String> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(List<String> vaultUserList) {
+        this.userList = vaultUserList;
+    }
+
+    public List<String> getDbConfigList() {
+        return dbConfigList;
+    }
+
+    public void setDbConfigList(List<String> dbConfigList) {
+        this.dbConfigList = dbConfigList;
     }
 
     // Vault status
