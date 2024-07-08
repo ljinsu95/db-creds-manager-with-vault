@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.Common;
+import common.VaultException;
 import common.model.Vault;
 
 public class VaultUserpassAuth {
@@ -52,7 +53,7 @@ public class VaultUserpassAuth {
     }
 
     /* Auth 활성화 */
-    public void authEnable() {
+    public void authEnable() throws VaultException {
         System.out.println("Userpass Auth Enable");
         Map<String, String> data = new HashMap<>();
         data.put("type", "userpass");
@@ -95,7 +96,7 @@ public class VaultUserpassAuth {
                 userList.add(user);
             }
             vault.setUserList(userList);
-            
+
             return items;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -105,7 +106,7 @@ public class VaultUserpassAuth {
     }
 
     /* 사용자 생성 */
-    public void createUser(String username, String password) {
+    public void createUser(String username, String password) throws VaultException {
         System.out.println("User Create");
         // TODO : token_policies에 policy 다수 설정으로 변경 필요, 현재는 1개의 policy로 모든 db-config 접근 허용, 추후 지정한 db-config에만 접근 허용
         Map<String, String> data = new HashMap<>();
@@ -120,7 +121,7 @@ public class VaultUserpassAuth {
      * 사용자 권한 생성
      * TODO : Userpass 권한 세부 설정 필요 (DB 별로 생성, Userpass - username, password 값만 허용 등)
      */
-    public void createPolicy() {
+    public void createPolicy() throws VaultException {
         System.out.println("User Policy Create");
         String policy = "path \"db-manager/creds/{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n    capabilities = [\"read\"]\n}\npath \"auth/db-userpass/users/{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n    capabilities = [\"create\", \"update\"]\n}\n";
         Map<String, String> data = new HashMap<>();

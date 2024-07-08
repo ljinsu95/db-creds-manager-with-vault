@@ -86,9 +86,13 @@ public class Common {
         return "";
     }
 
-    public static String postVaultRequest(String vaultUrl, String vaultToken, Map<String, String> data) {
+    public static String postVaultRequest(String vaultUrl, String vaultToken, Map<String, String> data) throws VaultException {
         System.out.println("호출 URL : " + vaultUrl);
         HttpURLConnection connection = null;
+        int responseCode = 999;
+        BufferedReader responseBody = null;
+        /* 결과값 */
+        StringBuilder response = new StringBuilder();
 
         /* Request Body Data Map -> Json */
         String requestBody = createJson(data);
@@ -106,32 +110,21 @@ public class Common {
                 outputStream.flush();
             }
 
-            int responseCode = connection.getResponseCode();
+            responseCode = connection.getResponseCode();
             System.out.println("Response Code: " + responseCode);
             if (responseCode >= 200 && responseCode < 300) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                System.out.println("Response: " + response.toString());
-                return response.toString();
+                responseBody = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             } else {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                System.out.println("Response: " + response.toString());
+                responseBody = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
             }
+            String inputLine;
+
+            while ((inputLine = responseBody.readLine()) != null) {
+                response.append(inputLine);
+            }
+            responseBody.close();
+
+            System.out.println("Response: " + response.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,7 +133,12 @@ public class Common {
                 connection.disconnect(); // 연결 종료
             }
         }
-        return "";
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return response.toString();
+        } else {
+            throw new VaultException(response.toString());
+        }
     }
 
     public static String getVaultRequest(String vaultUrl, String vaultToken) {

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.Common;
+import common.VaultException;
 import common.model.Vault;
 
 public class VaultDatabaseEngine {
@@ -46,7 +47,7 @@ public class VaultDatabaseEngine {
         return "";
     }
 
-    public void engineEnable() {
+    public void engineEnable() throws VaultException {
         System.out.println("Database Engine Enable");
         Map<String, String> data = new HashMap<>();
         data.put("type", "database");
@@ -54,7 +55,7 @@ public class VaultDatabaseEngine {
     }
 
     // Database Engine Config 생성
-    public void configCreate(String dbType, String dbUrl, String dbUserNm, String dbUserPw) {
+    public void configCreate(String dbType, String dbUrl, String dbUserNm, String dbUserPw) throws VaultException {
         System.out.println("Database Config Create");
         Map<String, String> data = new HashMap<>();
         data.put("plugin_name", "mysql-database-plugin");
@@ -104,7 +105,7 @@ public class VaultDatabaseEngine {
     /* 
      * DB Dynamic Role 생성
      */
-    public void roleCreate(String userName, String dbName, String creationStatements) {
+    public void roleCreate(String userName, String dbName, String creationStatements) throws VaultException {
         System.out.println("Database Role Create");
         creationStatements.replace("{{name}}", userName);
         Map<String, String> data = new HashMap<>();

@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import common.VaultException;
 import common.model.Vault;
 import common.service.VaultUserpassAuth;
 
@@ -54,11 +55,16 @@ public class UserRegForm extends JDialog {
     }
 
     private void init() {
-        new VaultUserpassAuth(vault).createPolicy();
-        // vault userpass auth check
-        if (new VaultUserpassAuth(vault).authCheck() == null) {
-            System.out.println("Vault Userpass Auth 없음.");
-            new VaultUserpassAuth(vault).authEnable();
+        try {
+            // TODO : 사용자 생성 시 Policy 생성으로 변경 필요
+            new VaultUserpassAuth(vault).createPolicy();
+            // vault userpass auth check
+            if (new VaultUserpassAuth(vault).authCheck() == null) {
+                System.out.println("Vault Userpass Auth 없음.");
+                new VaultUserpassAuth(vault).authEnable();
+            }
+        } catch (VaultException e) {
+            e.getStackTrace();
         }
 
         // test 호출
@@ -129,7 +135,11 @@ public class UserRegForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ae.getActionCommand();
-                new VaultUserpassAuth(vault).createUser(txtUsername.getText(), txtPassword.getText());
+                try {
+                    new VaultUserpassAuth(vault).createUser(txtUsername.getText(), txtPassword.getText());
+                } catch (VaultException e) {
+                    e.getStackTrace();
+                }
 				dispose();
 				owner.setVisible(true);
 				owner.setBtnUserReg(true);

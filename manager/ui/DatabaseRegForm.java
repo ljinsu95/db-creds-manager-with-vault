@@ -21,6 +21,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import common.VaultException;
 import common.model.Vault;
 import common.service.VaultDatabaseEngine;
 
@@ -74,7 +75,11 @@ public class DatabaseRegForm extends JDialog {
 		// vault database engine check
 		if (new VaultDatabaseEngine(vault).engineCheck() == null) {
 			System.out.println("Vault Database Engine 없음.");
-			new VaultDatabaseEngine(vault).engineEnable();
+			try {
+				new VaultDatabaseEngine(vault).engineEnable();
+			} catch (VaultException e) {
+				e.getStackTrace();
+			}
 		}
 
 		// 사이즈 통일
@@ -202,13 +207,19 @@ public class DatabaseRegForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				ae.getActionCommand();
-				// TODO : 실패 시 예외처리 필요
-				new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
+				try {
+					// TODO : 실패 시 예외처리 필요
+					new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
 
-				// 사용자 전용 role 생성
-				for (String user : vault.getUserList()) {
-					new VaultDatabaseEngine(vault).roleCreate(user, txtDBType.getText(), taCreationStatements.getText());
+					// 사용자 전용 role 생성
+					for (String user : vault.getUserList()) {
+						new VaultDatabaseEngine(vault).roleCreate(user, txtDBType.getText(), taCreationStatements.getText());
+					}
+					
+				} catch (VaultException e) {
+					e.getStackTrace();
 				}
+
 				// MainForm mainForm = new MainForm(MainForm.this, vault);
 
 				// InformationForm informationForm = new InformationForm(LoginForm.this, title);
