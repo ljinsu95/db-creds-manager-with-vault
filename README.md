@@ -17,4 +17,29 @@ Vault 기반 Database 계정 발급 프로그램
     - vault login -method=db-userpass -username=$USER_NAME -password=$USER_PW
 2. DB 계정 발급
     - vault write db-manager/creds/$USER_NAME
+
+## 필요 권한
+### 관리자
+
+### 사용자
     
+
+## 추후 작업 계획
+1. 관리자 - USER 등록
+2. USER 추가 시 config 별 Role 추가
+3. config 추가 시 USER 별 Role 추가
+
+### 사용자 권한
+1. DB 계정 발급 (path : db-manager/creds/{{username}})
+2. Userpass 패스워드 변경 (paht : auth/db-userpass/user/{{username}})
+```shell
+vault policy write -output-curl-string db-user -<<EOF
+path "db-manager/creds/{{identity.entity.aliases.db-userpass.name}}" {
+    capabilities = ["read"]
+}
+path "auth/db-userpass/users/{{identity.entity.aliases.db-userpass.name}}" {
+    capabilities = ["create", "update"]
+}
+EOF
+```
+
