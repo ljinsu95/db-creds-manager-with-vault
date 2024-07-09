@@ -86,6 +86,60 @@ public class Common {
         return "";
     }
 
+    public static String postVaultLogin(String vaultUrl, Map<String, String> data) throws VaultException {
+        System.out.println("호출 URL : " + vaultUrl);
+        HttpURLConnection connection = null;
+        int responseCode = 999;
+        BufferedReader responseBody = null;
+        /* 결과값 */
+        StringBuilder response = new StringBuilder();
+
+        /* Request Body Data Map -> Json */
+        String requestBody = createJson(data);
+
+        try {
+            URL url = new URL(vaultUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+
+            // 요청 바디 전송을 위한 OutputStream 열기
+            connection.setDoOutput(true);
+            try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
+                outputStream.writeBytes(requestBody);
+                outputStream.flush();
+            }
+
+            responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+            if (responseCode >= 200 && responseCode < 300) {
+                responseBody = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                responseBody = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            }
+            String inputLine;
+
+            while ((inputLine = responseBody.readLine()) != null) {
+                response.append(inputLine);
+            }
+            responseBody.close();
+
+            System.out.println("Response: " + response.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect(); // 연결 종료
+            }
+        }
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return response.toString();
+        } else {
+            throw new VaultException(response.toString());
+        }
+    }
+
     public static String postVaultRequest(String vaultUrl, String vaultToken, Map<String, String> data) throws VaultException {
         System.out.println("호출 URL : " + vaultUrl);
         HttpURLConnection connection = null;
@@ -141,6 +195,7 @@ public class Common {
         }
     }
 
+    // TODO : 실패 시 throw VaultException으로 교체 필요
     public static String getVaultRequest(String vaultUrl, String vaultToken) {
         HttpURLConnection connection = null;
 

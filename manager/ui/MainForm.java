@@ -20,13 +20,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import common.Common;
+import common.VaultException;
 import common.model.Vault;
 import common.service.VaultDatabaseEngine;
 import common.service.VaultUserpassAuth;
@@ -200,13 +199,13 @@ public class MainForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				setBtnDBReg(false);
-				if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+				try {
+					vault.tokenLookupSelf();
 					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this);
-
-					// InformationForm informationForm = new InformationForm(LoginForm.this, title);
-					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
 					setVisible(false);
 					mainForm.setVisible(true);
+				} catch (VaultException ve) {
+					ve.getStackTrace();
 				}
 			}
 		});
@@ -216,13 +215,13 @@ public class MainForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				setBtnUserReg(false);
-				if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+				try {
+					vault.tokenLookupSelf();
 					UserRegForm userRegForm = new UserRegForm(MainForm.this);
-
-					// InformationForm informationForm = new InformationForm(LoginForm.this, title);
-					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
 					setVisible(false);
 					userRegForm.setVisible(true);
+				} catch (VaultException ve) {
+					ve.getStackTrace();
 				}
 			}
 		});

@@ -28,7 +28,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import common.Common;
+import common.VaultException;
 import common.model.Vault;
 
 public class LoginForm extends JFrame {
@@ -225,10 +225,11 @@ public class LoginForm extends JFrame {
 					JOptionPane.WARNING_MESSAGE);
 				} else {
 					// Vault Login 시도
-					if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+					try {
+						vault.tokenLookupSelf();
 						System.out.println("로그인 성공");
 						System.out.println(vault.getVaultUrl());
-	
+
 						MainForm mainForm = new MainForm(LoginForm.this);
 	
 						setVisible(false);
@@ -243,12 +244,15 @@ public class LoginForm extends JFrame {
 							// properties 파일의 값을 업데이트한다.
 							properties.setProperty("vault.url", vault.getVaultUrl());
 							properties.setProperty("vault.auth", vault.getVaultAuthType());
-							properties.setProperty("vault.usernm", vault.getVaultUserNm());
 							if (cbAuthInfoSave.isSelected()) {
 								properties.setProperty("vault.token", vault.getVaultToken());
+								properties.setProperty("vault.usernm", vault.getVaultUserNm());
+								properties.setProperty("vault.userpw", vault.getVaultUesrPw());
 								properties.setProperty("login.info.save", "true");
 							} else {
 								properties.setProperty("vault.token", "");
+								properties.setProperty("vault.usernm", "");
+								properties.setProperty("vault.userpw", "");
 								properties.setProperty("login.info.save", "false");
 								
 								vaultTokenTxt.setText("");
@@ -267,7 +271,8 @@ public class LoginForm extends JFrame {
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}
-					} else {
+					} catch (VaultException ve) {
+						ve.getStackTrace();
 						JOptionPane.showConfirmDialog(LoginForm.this, "로그인 정보가 일치하지 않습니다.", "RETRY",
 								JOptionPane.WARNING_MESSAGE);
 					}
@@ -305,7 +310,7 @@ public class LoginForm extends JFrame {
 	}
 
 	public void showFrame() {
-		setTitle("Welcome to JAVA");
+		setTitle("DB Creds Manager With Vault - Manager");
 		pack(); // 프레임의 크기를 컨텐츠에 맞게 조정
 		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때
 		// 사용

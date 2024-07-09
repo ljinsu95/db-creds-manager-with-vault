@@ -1,12 +1,11 @@
 package common.model;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import common.Common;
+import common.VaultException;
 
 /**
  * Vault관련 정보를 담고있는 싱글톤 클래스
@@ -148,44 +147,24 @@ public class Vault {
         }
     }
 
-    // token login
-    public String vaultLogin(String authType, String token) {
-        Common.request(getVaultUrl(), token);
-        return "";
+    /* 
+     * db-userpass login
+     * return : String token;
+     */
+    public void userpassLogin(String userNm, String userPw) throws VaultException {
+        System.out.println("db-userpass login");
+        Map<String, String> data = new HashMap<>();
+        data.put("password", userPw);
+        String result = Common.postVaultLogin(vault.getVaultUrl() + "/v1/auth/db-userpass/login/"+userNm, data);
+        System.out.println(result);
+        String token = Common.getNestedJsonToStr(result, "auth", "client_token");
+        setVaultToken(token);
     }
 
-    public String vaultLogin(String authType, String userNm, String userPw) {
-
-        return "";
-    }
-
-    public int tokenLookupSelf() {
-        int responseCode = 999;
+    public String tokenLookupSelf() throws VaultException {
         if (vaultAuthType.equals(AUTH_USERNAME)) {
-            vaultLogin(vaultAuthType, vaultUserNm, vaultUesrPw);
+            userpassLogin(vaultUserNm, vaultUesrPw);
         }
-        try {
-            URL url = new URL(vaultUrl+"/v1/auth/token/lookup-self");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("X-Vault-Token", vaultToken);
-
-            responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-            
-            System.out.println("Response: " + response.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return responseCode;
+        return Common.getVaultRequest(vaultUrl+"/v1/auth/token/lookup-self", vaultToken);
     }
 }
