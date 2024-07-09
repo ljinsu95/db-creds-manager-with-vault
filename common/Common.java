@@ -190,7 +190,7 @@ public class Common {
             String jsonString = objectMapper.writeValueAsString(map);
 
             // JSON 문자열 출력
-            System.out.println(jsonString);
+            System.out.println("data : " + jsonString);
             return jsonString;
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,7 +230,7 @@ public class Common {
     // }
 
     @SuppressWarnings("unchecked")
-    public static String[] getJsonNestedValue(String strJson, String... keys) {
+    public static String[] getNestedJsonToStrArr(String strJson, String... keys) {
         System.out.println("## JSON DATA : " + strJson);
         // ObjectMapper 객체 생성
         ObjectMapper objectMapper = new ObjectMapper();
@@ -269,16 +269,31 @@ public class Common {
 
     // Map<String, Object>형태의 중첩 데이터 조회
     @SuppressWarnings("unchecked")
-    public static String getNestedValue(Map<String, Object> map, String... keys) {
-        Object value = map;
-        for (String key : keys) {
-            if (value instanceof Map) {
-                value = ((Map<String, Object>) value).get(key);
-            } else {
-                return null;
+    public static String getNestedJsonToStr(String strJson, String... keys) {
+        System.out.println("## JSON DATA : " + strJson);
+        // ObjectMapper 객체 생성
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // JSON 문자열을 Map으로 변환
+        Map<String, Object> map;
+        try {
+            map = objectMapper.readValue(
+                strJson,
+                new TypeReference<Map<String, Object>>() {
+                });
+            Object value = map;
+            for (String key : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<String, Object>) value).get(key);
+                } else {
+                    return null;
+                }
             }
+            return value != null ? value.toString() : null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return value != null ? value.toString() : null;
+        return null;
     }
 
 }

@@ -5,11 +5,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.Common;
 
@@ -143,26 +138,14 @@ public class Vault {
             System.out.println("Vault Health Error");
             return false;
         }
-        // ObjectMapper 객체 생성
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        // JSON 문자열을 Map으로 변환
-        Map<String, Object> map;
-        try {
-            map = objectMapper.readValue(
-                    jsonResult,
-                    new TypeReference<Map<String, Object>>() {
-                    });
-            // 중첩 값 확인
-            String nestedValue = Common.getNestedValue(map, "sealed");
-            if (nestedValue.equals("false")) {
-                System.out.println("Vault Health OK");
-            }
+        String nestedValue = Common.getNestedJsonToStr(jsonResult, "sealed");
+        if (nestedValue.equals("false")) {
+            System.out.println("Vault Health OK");
             return true;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        } else {
+            return false;
         }
-        return false;
     }
 
     // token login

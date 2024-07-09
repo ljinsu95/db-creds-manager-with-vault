@@ -262,6 +262,27 @@ public class MainForm extends JDialog {
 		setResizable(false); // 창 크기를 조절할 수 없도록 설정함
 	}
 
+	/* DB 추가 후 리스트 업데이트 */
+	public void updatePnlDB() {
+		/* User 목록 조회 */
+		String[] configs = new VaultDatabaseEngine(vault).configList();
+		System.out.println("config : " + configs.toString());
+
+		// spUser.remove(tbUser);
+		// 테이블 모델 생성
+		DefaultTableModel dtmDbList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		for (int i = 0; i < configs.length; i++) {
+			dtmDbList.addRow(new Object[]{configs[i]});
+		}
+
+		// JTable 생성
+		tbDb = new JTable(dtmDbList);
+		tbDb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		// JScrollPane 업데이트
+		spDb.setViewportView(tbDb);
+	}
+
 	/* User 추가 후 리스트 업데이트 */
 	public void updatePnlUser() {
 		/* User 목록 조회 */

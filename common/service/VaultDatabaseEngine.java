@@ -3,10 +3,6 @@ package common.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import common.Common;
 import common.VaultException;
 import common.model.Vault;
@@ -24,27 +20,7 @@ public class VaultDatabaseEngine {
 
         String engineList = Common.request(vault.getVaultUrl() + "/v1/sys/mounts", vault.getVaultToken());
 
-        // ObjectMapper 객체 생성
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        // JSON 문자열을 Map으로 변환
-        Map<String, Object> map;
-        try {
-            map = objectMapper.readValue(
-                    engineList,
-                    new TypeReference<Map<String, Object>>() {
-                    });
-            // 중첩 값 확인
-            String nestedValue = Common.getNestedValue(map, "data", "db-manager/", "type");
-            if (nestedValue.equals("database")) {
-                System.out.println("Database Engine 활성화 상태");
-            }
-            return nestedValue;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return Common.getNestedJsonToStr(engineList, "data", "db-manager/", "type");
     }
 
     public void engineEnable() throws VaultException {
@@ -75,44 +51,43 @@ public class VaultDatabaseEngine {
         if(jsonConfigList.isBlank()) {
             return new String[0];
         }
-        // ObjectMapper 객체 생성
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        // JSON 문자열을 Map으로 변환
-        Map<String, Object> map;
-        try {
-            map = objectMapper.readValue(
-                    jsonConfigList,
-                    new TypeReference<Map<String, Object>>() {
-                    });
-            // 중첩 값 확인
-            String nestedValue = Common.getNestedValue(map, "data", "keys");
-            System.out.println("config list : " + nestedValue);
-
-            // 대괄호 제거 및 공백 제거
-            nestedValue = nestedValue.substring(1, nestedValue.length() - 1).replace(" ", "");
-
-            // 콤마를 기준으로 분리
-            String[] items = nestedValue.split(",");
-            return items;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        return new String[0];
+        return Common.getNestedJsonToStrArr(jsonConfigList, "data", "keys");
     }
 
     /* 
      * DB Dynamic Role 생성
      */
-    public void roleCreate(String userName, String dbName, String creationStatements) throws VaultException {
+    public void createRole(String userName, String dbName, String creationStatements) throws VaultException {
         System.out.println("Database Role Create");
+        System.out.println("creationStatements : " + creationStatements);
+        System.out.println("userName : " + userName);
+
         creationStatements.replace("{{name}}", userName);
         Map<String, String> data = new HashMap<>();
         data.put("db_name", dbName);
-        data.put("creation_statements", creationStatements);
-        data.put("default_ttl", "20m");
+        data.put("creation_statements", creationStatements.replace("{{name}}", userName));
+        data.put("revocation_statements", "DROP USER '{{name}}'@'%';".replace("{{name}}", userName));
+        data.put("default_ttl", "2m");
         Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/roles/" + dbName + "-" + userName, vault.getVaultToken(), data);
+    }
 
-    } 
+    /* 
+     * DB Dynamic Default Role 생성
+     */
+    public void createRole(String dbName, String creationStatements) throws VaultException {
+        System.out.println("Database Role Create");
+        Map<String, String> data = new HashMap<>();
+        data.put("db_name", dbName);
+        data.put("creation_statements", creationStatements);
+        data.put("revocation_statements", "DROP USER '{{name}}'@'%';");
+        data.put("default_ttl", "2m");
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/roles/" + dbName, vault.getVaultToken(), data);
+    }
+
+    public String readRole(String dbName) throws VaultException {
+        System.out.println("Database Role Read");
+        String result = Common.getVaultRequest(vault.getVaultUrl() + "/v1/db-manager/roles/" + dbName, vault.getVaultToken());
+        return result;
+    }
 }

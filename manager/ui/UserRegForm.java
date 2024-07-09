@@ -17,8 +17,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import common.Common;
 import common.VaultException;
 import common.model.Vault;
+import common.service.VaultDatabaseEngine;
 import common.service.VaultUserpassAuth;
 
 /* User 생성
@@ -66,9 +68,6 @@ public class UserRegForm extends JDialog {
         } catch (VaultException e) {
             e.getStackTrace();
         }
-
-        // test 호출
-        // new VaultUserpassAuth(vault).createUser("test_user", "1234");
 
         // 사이즈 통일
 		Dimension labelSize = new Dimension(120, 30);
@@ -136,7 +135,23 @@ public class UserRegForm extends JDialog {
             public void actionPerformed(ActionEvent ae) {
                 ae.getActionCommand();
                 try {
+                    /* 사용자 생성 */
                     new VaultUserpassAuth(vault).createUser(txtUsername.getText(), txtPassword.getText());
+                    /* DB Connection 목록 조회 */
+                    String[] configList = new VaultDatabaseEngine(vault).configList();
+                    
+                    String policyName = null;
+                    for (int i = 0; i < configList.length; i++) {
+                        policyName += ", creds-"+configList[i];
+
+                        String statements = Common.getNestedJsonToStr(new VaultDatabaseEngine(vault).readRole(configList[i]), "data", "creation_statements");
+                        // TODO : 대괄호 지워줘야함
+                        statements = statements.substring(1, statements.length()-1);
+                        new VaultDatabaseEngine(vault).createRole(txtUsername.getText(), configList[i], statements);
+                    }
+
+                    /* 이미 생성된 DB Connection에 접근 가능하도록 Policy 추가 */
+                    new VaultUserpassAuth(vault).updateUserPolicy(txtUsername.getText(), new VaultUserpassAuth(vault).getUserPolicy(txtUsername.getText())+policyName);
                 } catch (VaultException e) {
                     e.getStackTrace();
                 }

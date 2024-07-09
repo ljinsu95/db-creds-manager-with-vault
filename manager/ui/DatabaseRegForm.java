@@ -55,9 +55,6 @@ public class DatabaseRegForm extends JDialog {
 	private JPanel northPanel;
 	private JPanel pnlCenter;
 
-	private JPanel usernamePnl;
-	private JPanel passwordPnl;
-	private JPanel tokenPnl;
 	private JButton btnDBReg;
 	private JButton btnCancel;
 	private LayoutManager flowLeft;
@@ -74,13 +71,18 @@ public class DatabaseRegForm extends JDialog {
 	private void init() {
         vault = Vault.getInstance();
 		// vault database engine check
-		if (new VaultDatabaseEngine(vault).engineCheck() == null) {
+		String dbEnable = new VaultDatabaseEngine(vault).engineCheck();
+		if (dbEnable == null) {
 			System.out.println("Vault Database Engine 없음.");
 			try {
 				new VaultDatabaseEngine(vault).engineEnable();
 			} catch (VaultException e) {
 				e.getStackTrace();
-			}
+			}	
+		} else if (dbEnable.equals("database")) {
+			System.out.println("Database Engine 활성화 상태");
+		} else {
+			System.out.println("Vault 내부에서 db-manager를 이미 사용중입니다.");
 		}
 
 		// 사이즈 통일
@@ -209,13 +211,14 @@ public class DatabaseRegForm extends JDialog {
 			public void actionPerformed(ActionEvent ae) {
 				ae.getActionCommand();
 				try {
-					// TODO : 실패 시 예외처리 필요
 					new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
-
+					new VaultUserpassAuth(vault).createPolicy(txtDBType.getText());
+					
+					new VaultDatabaseEngine(vault).createRole(txtDBType.getText(), taCreationStatements.getText());
 					// 사용자 전용 role 생성
 					for (String user : vault.getUserList()) {
-						new VaultDatabaseEngine(vault).roleCreate(user, txtDBType.getText(), taCreationStatements.getText());
-						new VaultUserpassAuth(vault).createPolicy();
+						new VaultDatabaseEngine(vault).createRole(user, txtDBType.getText(), taCreationStatements.getText());
+						new VaultUserpassAuth(vault).updateUserPolicy(user, new VaultUserpassAuth(vault).getUserPolicy(user)+", creds-"+txtDBType.getText());
 					}
 					
 				} catch (VaultException e) {
@@ -240,6 +243,7 @@ public class DatabaseRegForm extends JDialog {
                 ae.getActionCommand();
 				dispose();
 				owner.setVisible(true);
+				owner.setBtnDBReg(true);
             }
         });
 	}

@@ -5,10 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import common.Common;
 import common.VaultException;
 import common.model.Vault;
@@ -26,30 +22,14 @@ public class VaultUserpassAuth {
 
         String engineList = Common.request(vault.getVaultUrl() + "/v1/sys/auth", vault.getVaultToken());
 
-        // ObjectMapper 객체 생성
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        // JSON 문자열을 Map으로 변환
-        Map<String, Object> map;
-        try {
-            map = objectMapper.readValue(
-                    engineList,
-                    new TypeReference<Map<String, Object>>() {
-                    });
-            // 중첩 값 확인 (없을 경우 Null 리턴)
-            String nestedValue = Common.getNestedValue(map, "data", "db-userpass/", "accessor");
-            if (nestedValue == null) {
-                return null;
-            } else {
-                System.out.println("Userpass Auth 활성화 상태");
-                vault.setAccessor(nestedValue);
-            }
-            return nestedValue;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        String nestedValue = Common.getNestedJsonToStr(engineList, "data", "db-userpass/", "accessor");
+        if (nestedValue == null) {
+            return null;
+        } else {
+            System.out.println("Userpass Auth 활성화 상태");
+            vault.setAccessor(nestedValue);
         }
-
-        return "";
+        return nestedValue;
     }
 
     /* Auth 활성화 */
@@ -70,39 +50,16 @@ public class VaultUserpassAuth {
         if (jsonUserList.isBlank()) {
             return new String[0];
         }
-        // ObjectMapper 객체 생성
-        ObjectMapper objectMapper = new ObjectMapper();
+        String[] items = Common.getNestedJsonToStrArr(jsonUserList, "data", "keys");
 
-        // JSON 문자열을 Map으로 변환
-        Map<String, Object> map;
-        try {
-            map = objectMapper.readValue(
-                    jsonUserList,
-                    new TypeReference<Map<String, Object>>() {
-                    });
-            // 중첩 값 확인
-            String nestedValue = Common.getNestedValue(map, "data", "keys");
-            System.out.println("user list : " + nestedValue);
-
-            // 대괄호 제거 및 공백 제거
-            nestedValue = nestedValue.substring(1, nestedValue.length() - 1).replace(" ", "");
-
-            // 콤마를 기준으로 분리
-            String[] items = nestedValue.split(",");
-
-            // 유저 목록을 vault 객체에 저장
-            List<String> userList = new ArrayList<String>();
-            for (String user : items) {
-                userList.add(user);
-            }
-            vault.setUserList(userList);
-
-            return items;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        // 유저 목록을 vault 객체에 저장
+        List<String> userList = new ArrayList<String>();
+        for (String user : items) {
+            userList.add(user);
         }
+        vault.setUserList(userList);
 
-        return new String[0];
+        return items;
     }
 
     /* 사용자 생성 */
@@ -117,6 +74,21 @@ public class VaultUserpassAuth {
         System.out.println(result);
     }
 
+    public void updateUserPolicy(String userName, String policyName) throws VaultException {
+        System.out.println("User Update Policy");
+        Map<String, String> data = new HashMap<>();
+        data.put("token_policies", policyName);
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+userName, vault.getVaultToken(), data);
+    }
+
+    public String getUserPolicy(String userName) {
+        System.out.println("Get User Policy");
+        String result = Common.getVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+userName, vault.getVaultToken());
+        System.out.println(result);
+        String policies = Common.getNestedJsonToStr(result, "data", "token_policies");
+        return policies.substring(1, policies.length() - 1);
+    }
+
     /* 
      * 사용자 권한 생성
      * TODO : Userpass 권한 세부 설정 필요 (DB 별로 생성, Userpass - username, password 값만 허용 등)
@@ -127,6 +99,19 @@ public class VaultUserpassAuth {
         Map<String, String> data = new HashMap<>();
         data.put("policy", policy);
         String result = Common.postVaultRequest(vault.getVaultUrl() + "/v1/sys/policies/acl/db-user", vault.getVaultToken(), data);
+        System.out.println(result);
+    }
+
+    /* 
+     * DB Config 별 Creds Dynamic 권한 추가
+     * dbConfigName : DB Engine Config 명
+     */
+    public void createPolicy(String dbConfigName) throws VaultException {
+        System.out.println("User Policy Create");
+        String policy = "path \"db-manager/creds/"+dbConfigName+"-{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n    capabilities = [\"read\"]\n}\n";
+        Map<String, String> data = new HashMap<>();
+        data.put("policy", policy);
+        String result = Common.postVaultRequest(vault.getVaultUrl() + "/v1/sys/policies/acl/creds-"+dbConfigName, vault.getVaultToken(), data);
         System.out.println(result);
     }
 }

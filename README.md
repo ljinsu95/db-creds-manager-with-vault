@@ -1,5 +1,6 @@
 # db-creds-manager-with-vault
 Vault 기반 Database 계정 발급 프로그램
+- 현재 MySQL만 지원
 
 ## 프로세스
 ### 관리자
@@ -9,8 +10,15 @@ Vault 기반 Database 계정 발급 프로그램
 2. 사용자 생성
     - vault auth enable -path=db-userpass userpass
     - vault write auth/db-userpass/users/$USER_NAME password=$PASSWORD token_policies=db-creds
+    1) DB Connection 리스트 조회
+    2) DB Connection 별 사용자 전용 Role 생성
+    3) DB Creds 접근 Policy 부여
 3. DB 등록
     - vault secrets enable -path=db-manager database
+    1) DB Connection(Vault DB config) 생성
+    2) DB Connection을 통해 생성된 Role에 접근가능한 Policy 생성
+    3) 사용자 별 DB Role 생성
+    4) 사용자 별 DB Creds 접근 Policy 부여
 ### 사용자
 1. 사용자 로그인
     - vault read sys/health
@@ -25,20 +33,23 @@ Vault 기반 Database 계정 발급 프로그램
     
 
 ## 추후 작업 계획
-1. 관리자 - USER 등록
-2. USER 추가 시 config 별 Role 추가
-3. config 추가 시 USER 별 Role 추가
+
 
 ### 사용자 권한
-1. DB 계정 발급 (path : db-manager/creds/{{username}})
+1. DB 계정 발급 (path : db-manager/creds/{{db_config_name}}-{{username}})
 2. Userpass 패스워드 변경 (paht : auth/db-userpass/user/{{username}})
 ```shell
+# 본인의 패스워드 변경 권한 (추후 param - password만 허용하도록 변경)
 vault policy write -output-curl-string db-user -<<EOF
-path "db-manager/creds/{{identity.entity.aliases.db-userpass.name}}" {
-    capabilities = ["read"]
-}
 path "auth/db-userpass/users/{{identity.entity.aliases.db-userpass.name}}" {
     capabilities = ["create", "update"]
+}
+EOF
+
+# ex) DB Connection Name : mysql
+vault policy write -output-curl-string creds-mysql -<<EOF
+path "db-manager/creds/mysql-{{identity.entity.aliases.db-userpass.name}}" {
+    capabilities = ["read"]
 }
 EOF
 ```
