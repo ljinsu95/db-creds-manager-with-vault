@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
 import common.VaultException;
@@ -42,6 +43,7 @@ public class LoginForm extends JFrame {
 	private String vaultToken;
 	private String vaultUsernm;
 	private String vaultUserpw;
+	private String userType;
 	private String loginInfoSave;
 
 	private String vaultAuthList[] = { Vault.AUTH_TOKEN, Vault.AUTH_USERNAME };
@@ -59,7 +61,7 @@ public class LoginForm extends JFrame {
 	private JTextField vaultUsernameTxt;
 	private JTextField vaultPasswordTxt;
 
-	private JPanel northPanel;
+	private JPanel pnlCenter;
 
 	private JPanel usernamePnl;
 	private JPanel passwordPnl;
@@ -67,6 +69,8 @@ public class LoginForm extends JFrame {
 
 	private JCheckBox cbAuthInfoSave;
 
+	private JToggleButton btnManager;
+	private JToggleButton btnUser;
 	private JButton logBtn;
 	private JButton joinBtn;
 	private LayoutManager flowLeft;
@@ -96,7 +100,13 @@ public class LoginForm extends JFrame {
 			vaultToken = properties.getProperty("vault.token");
 			vaultUsernm = properties.getProperty("vault.usernm");
 			vaultUserpw = properties.getProperty("vault.userpw");
+			userType = properties.getProperty("login.type");
 			loginInfoSave = properties.getProperty("login.info.save");
+			if (userType.equals("")) {
+				vault.setUserType("user");
+			} else {
+				vault.setUserType(userType);
+			}
 			if (!vaultAuthType.equals("")) {
 				vault.setVaultAuthType(vaultAuthType);
 			} else {
@@ -152,6 +162,15 @@ public class LoginForm extends JFrame {
 			cbAuthInfoSave.setSelected(true);
 		}
 
+		/* 사용자 타입 버튼 */
+		btnManager = new JToggleButton("관리자");
+		btnUser = new JToggleButton("사용자");
+
+		ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(btnManager);
+        buttonGroup.add(btnUser);
+
+
 		logBtn = new JButton("로그인");
 		logBtn.setPreferredSize(btnSize);
 		joinBtn = new JButton("회원가입");
@@ -163,7 +182,12 @@ public class LoginForm extends JFrame {
 		flowLeft = new FlowLayout(FlowLayout.LEFT);
 		flowRight = new FlowLayout(FlowLayout.RIGHT);
 
-		northPanel = new JPanel(new GridLayout(0, 1));
+		JPanel pnlNorth = new JPanel(new GridLayout(1, 2)); // 1행 2열의 그리드 레이아웃
+		pnlNorth.add(btnManager);
+		pnlNorth.add(btnUser);
+		pnlNorth.setPreferredSize(new Dimension(300, 50));
+
+		pnlCenter = new JPanel(new GridLayout(0, 1));
 
 		JPanel urlPnl = new JPanel(flowLeft);
 		urlPnl.add(vaultUrlLabel);
@@ -185,10 +209,10 @@ public class LoginForm extends JFrame {
 		tokenPnl.add(vaultTokenLabel);
 		tokenPnl.add(vaultTokenTxt);
 
-		northPanel.add(urlPnl);
-		northPanel.add(authPnl);
-		northPanel.add(usernamePnl);
-		northPanel.add(passwordPnl);
+		pnlCenter.add(urlPnl);
+		pnlCenter.add(authPnl);
+		pnlCenter.add(usernamePnl);
+		pnlCenter.add(passwordPnl);
 		// northPanel.add(tokenPnl);
 
 		JPanel southPanel = new JPanel(new BorderLayout());
@@ -200,10 +224,12 @@ public class LoginForm extends JFrame {
 		southPanel.add(cbAuthInfoSave, BorderLayout.WEST);
 		southPanel.add(pnlLogin, BorderLayout.EAST);
 
-		northPanel.setBorder(new EmptyBorder(0, 20, 0, 20));
+		pnlNorth.setBorder(new EmptyBorder(10, 20, 0, 20));
+		pnlCenter.setBorder(new EmptyBorder(0, 20, 0, 20));
 		southPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
 
-		add(northPanel, BorderLayout.NORTH);
+		add(pnlNorth, BorderLayout.NORTH);
+		add(pnlCenter, BorderLayout.CENTER);
 		add(southPanel, BorderLayout.SOUTH);
 
 	}
@@ -230,10 +256,14 @@ public class LoginForm extends JFrame {
 						System.out.println("로그인 성공");
 						System.out.println(vault.getVaultUrl());
 
-						MainForm mainForm = new MainForm(LoginForm.this);
+						if (vault.getUserType().equals("user")) {
+							// TODO : 사용자 전용 폼으로 이동
+						} else if (vault.getUserType().equals("manager")) {
+							MainForm mainForm = new MainForm(LoginForm.this);
+							setVisible(false);
+							mainForm.setVisible(true);
+						}
 	
-						setVisible(false);
-						mainForm.setVisible(true);
 	
 						Properties properties = new Properties();
 	
@@ -280,6 +310,29 @@ public class LoginForm extends JFrame {
 			}
 		});
 
+		/* 사용자 타입 전환 */
+        btnManager.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (btnManager.isSelected()) {
+                    btnManager.setSelected(true);
+                    btnUser.setSelected(false);
+					vault.setUserType("manager");
+                }
+            }
+        });
+
+        btnUser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (btnUser.isSelected()) {
+                    btnUser.setSelected(true);
+                    btnManager.setSelected(false);
+					vault.setUserType("user");
+                }
+            }
+        });
+
 		// 라디오 버튼
 		for (int i = 0; i < vaultAuthList.length; i++) {
 			rbtnAuth[i].addActionListener(new ActionListener() {
@@ -321,21 +374,24 @@ public class LoginForm extends JFrame {
 		updateAuthParamPnl(vault.getVaultAuthType());
 	}
 
+	/* Auth Panel 출력 업데이트 */
 	private void updateAuthParamPnl(String authType) {
 		if (authType.equals(Vault.AUTH_TOKEN)) {
-			northPanel.remove(usernamePnl);
-			northPanel.remove(passwordPnl);
-			northPanel.add(tokenPnl);
+			pnlCenter.remove(usernamePnl);
+			pnlCenter.remove(passwordPnl);
+			pnlCenter.add(tokenPnl);
+			pnlCenter.add(new JPanel());
 
-			northPanel.revalidate();
-			northPanel.repaint();
+			pnlCenter.revalidate();
+			pnlCenter.repaint();
 		} else if (authType.equals(Vault.AUTH_USERNAME)) {
-			northPanel.remove(tokenPnl);
-			northPanel.add(usernamePnl);
-			northPanel.add(passwordPnl);
+			pnlCenter.remove(tokenPnl);
+			pnlCenter.remove(pnlCenter.getComponentCount()-1);
+			pnlCenter.add(usernamePnl);
+			pnlCenter.add(passwordPnl);
 
-			northPanel.revalidate();
-			northPanel.repaint();
+			pnlCenter.revalidate();
+			pnlCenter.repaint();
 		}
 	}
 }

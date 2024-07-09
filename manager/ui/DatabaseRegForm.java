@@ -224,11 +224,7 @@ public class DatabaseRegForm extends JDialog {
 				} catch (VaultException e) {
 					e.getStackTrace();
 				}
-
-				// MainForm mainForm = new MainForm(MainForm.this, vault);
-
-				// InformationForm informationForm = new InformationForm(LoginForm.this, title);
-				// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
+				
 				dispose();
 				owner.setVisible(true);
 				owner.setBtnDBReg(true);

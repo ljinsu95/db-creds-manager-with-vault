@@ -24,6 +24,8 @@ public class Vault {
     private String dbUserNm;
     private String dbUserPw;
 
+    private String userType;
+
     private String accessor;
     private List<String> userList;
     private List<String> dbConfigList;
@@ -104,6 +106,14 @@ public class Vault {
         this.dbUserPw = dbUserPw;
     }
 
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
     public String getAccessor() {
         return accessor;
     }
@@ -162,6 +172,7 @@ public class Vault {
     }
 
     public String tokenLookupSelf() throws VaultException {
+        System.out.println("Token Lookup Self");
         if (vaultAuthType.equals(AUTH_USERNAME)) {
             userpassLogin(vaultUserNm, vaultUesrPw);
         }
