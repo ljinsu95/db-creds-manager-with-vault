@@ -44,9 +44,8 @@ public class UserRegForm extends JDialog {
     private JPanel pnlSouth;
 
 
-    public UserRegForm(MainForm owner, Vault vault) {
+    public UserRegForm(MainForm owner) {
         this.owner = owner;
-        this.vault = vault;
 
         init();
         setDisplay();
@@ -55,6 +54,7 @@ public class UserRegForm extends JDialog {
     }
 
     private void init() {
+        vault = Vault.getInstance();
         try {
             // TODO : 사용자 생성 시 Policy 생성으로 변경 필요
             new VaultUserpassAuth(vault).createPolicy();

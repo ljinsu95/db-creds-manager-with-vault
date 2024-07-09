@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 import common.VaultException;
 import common.model.Vault;
 import common.service.VaultDatabaseEngine;
+import common.service.VaultUserpassAuth;
 
 public class DatabaseRegForm extends JDialog {
 	private Vault vault;
@@ -61,9 +62,8 @@ public class DatabaseRegForm extends JDialog {
 	private JButton btnCancel;
 	private LayoutManager flowLeft;
 
-	public DatabaseRegForm(MainForm owner, Vault vault) {
+	public DatabaseRegForm(MainForm owner) {
 		this.owner = owner;
-		this.vault = vault;
 
 		init();
 		setDisplay();
@@ -72,6 +72,7 @@ public class DatabaseRegForm extends JDialog {
 	}
 
 	private void init() {
+        vault = Vault.getInstance();
 		// vault database engine check
 		if (new VaultDatabaseEngine(vault).engineCheck() == null) {
 			System.out.println("Vault Database Engine 없음.");
@@ -214,6 +215,7 @@ public class DatabaseRegForm extends JDialog {
 					// 사용자 전용 role 생성
 					for (String user : vault.getUserList()) {
 						new VaultDatabaseEngine(vault).roleCreate(user, txtDBType.getText(), taCreationStatements.getText());
+						new VaultUserpassAuth(vault).createPolicy();
 					}
 					
 				} catch (VaultException e) {

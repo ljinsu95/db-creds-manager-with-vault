@@ -81,7 +81,7 @@ public class LoginForm extends JFrame {
 
 	public void init() {
 		// Vault 객체 생성
-		vault = new Vault();
+		vault = Vault.getInstance();
 		// config.properties 값 호출
 
 		Properties properties = new Properties();
@@ -97,7 +97,11 @@ public class LoginForm extends JFrame {
 			vaultUsernm = properties.getProperty("vault.usernm");
 			vaultUserpw = properties.getProperty("vault.userpw");
 			loginInfoSave = properties.getProperty("login.info.save");
-			vault.setVaultAuthType(vaultAuthType);
+			if (!vaultAuthType.equals("")) {
+				vault.setVaultAuthType(vaultAuthType);
+			} else {
+				vault.setVaultAuthType("Token");
+			}
 			System.out.println("Vault URL: " + vaultUrl);
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -127,7 +131,7 @@ public class LoginForm extends JFrame {
 		rbtnAuth = new JRadioButton[vaultAuthList.length];
 		for (int i = 0; i < vaultAuthList.length; i++) {
 			rbtnAuth[i] = new JRadioButton(vaultAuthList[i]);
-			if (vaultAuthList[i].equals(vaultAuthType)) {
+			if (vaultAuthList[i].equals(vault.getVaultAuthType())) {
 				rbtnAuth[i].setSelected(true);
 			}
 			btnGroup.add(rbtnAuth[i]);
@@ -225,7 +229,7 @@ public class LoginForm extends JFrame {
 						System.out.println("로그인 성공");
 						System.out.println(vault.getVaultUrl());
 	
-						MainForm mainForm = new MainForm(LoginForm.this, vault);
+						MainForm mainForm = new MainForm(LoginForm.this);
 	
 						setVisible(false);
 						mainForm.setVisible(true);
@@ -309,7 +313,7 @@ public class LoginForm extends JFrame {
 										// 동작도 하지 않도록 설정
 		setResizable(false); // 프레임의 크기 고정
 		setVisible(true);
-		updateAuthParamPnl(vaultAuthType);
+		updateAuthParamPnl(vault.getVaultAuthType());
 	}
 
 	private void updateAuthParamPnl(String authType) {
@@ -328,9 +332,5 @@ public class LoginForm extends JFrame {
 			northPanel.revalidate();
 			northPanel.repaint();
 		}
-	}
-
-	public Vault getVault() {
-		return vault;
 	}
 }

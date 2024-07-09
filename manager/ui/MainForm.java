@@ -54,9 +54,8 @@ public class MainForm extends JDialog {
 	private JButton btnLogout;
 	private JButton btnWithdraw;
 
-	public MainForm(LoginForm owner, Vault vault) {
+	public MainForm(LoginForm owner) {
 		this.owner = owner;
-		this.vault = vault;
 		
 		init();
 		setDisplay();
@@ -66,6 +65,7 @@ public class MainForm extends JDialog {
 	}
 
 	private void init() {
+		vault = Vault.getInstance();
 		/* DB config 목록 조회 */
 		String[] configs = new VaultDatabaseEngine(vault).configList();
 		System.out.println("config : " + configs.toString());
@@ -200,8 +200,8 @@ public class MainForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				setBtnDBReg(false);
-				if (owner.getVault().tokenLookupSelf() == Common.SUCCESS_CODE) {
-					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this, vault);
+				if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this);
 
 					// InformationForm informationForm = new InformationForm(LoginForm.this, title);
 					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());
@@ -216,8 +216,8 @@ public class MainForm extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				setBtnUserReg(false);
-				if (owner.getVault().tokenLookupSelf() == Common.SUCCESS_CODE) {
-					UserRegForm userRegForm = new UserRegForm(MainForm.this, vault);
+				if (vault.tokenLookupSelf() == Common.SUCCESS_CODE) {
+					UserRegForm userRegForm = new UserRegForm(MainForm.this);
 
 					// InformationForm informationForm = new InformationForm(LoginForm.this, title);
 					// mainForm.setcheck(users.getUser(idTxt.getText()).toString());

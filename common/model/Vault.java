@@ -14,9 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import common.Common;
 
 /**
- * Vault
+ * Vault관련 정보를 담고있는 싱글톤 클래스
  */
 public class Vault {
+    private static Vault vault;
+
     public static String AUTH_TOKEN = "Token";
     public static String AUTH_USERNAME = "Username";
     private String vaultUrl;
@@ -32,18 +34,15 @@ public class Vault {
     private List<String> userList;
     private List<String> dbConfigList;
 
-    public Vault() {
+    private Vault() {
 
     }
-    
-    public Vault(String url) {
-        this.vaultUrl = url;
-    }
 
-    public Vault(String url, String authType, String token) {
-        this.vaultUrl = url;
-        this.vaultAuthType = authType;
-        this.vaultToken = token;
+    public static Vault getInstance() {
+        if (vault == null) {
+            vault = new Vault();
+        }
+        return vault;
     }
 
     // getter & setter
