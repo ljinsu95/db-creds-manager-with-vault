@@ -29,7 +29,7 @@ import common.service.VaultUserpassAuth;
 public class DatabaseRegForm extends JDialog {
 	private Vault vault;
 
-	private MainForm owner;
+	private ManagerMainForm owner;
 
 	// private JButton dbRegBtn;
 
@@ -59,7 +59,7 @@ public class DatabaseRegForm extends JDialog {
 	private JButton btnCancel;
 	private LayoutManager flowLeft;
 
-	public DatabaseRegForm(MainForm owner) {
+	public DatabaseRegForm(ManagerMainForm owner) {
 		this.owner = owner;
 
 		init();
@@ -224,7 +224,7 @@ public class DatabaseRegForm extends JDialog {
 				} catch (VaultException e) {
 					e.getStackTrace();
 				}
-				
+
 				dispose();
 				owner.setVisible(true);
 				owner.setBtnDBReg(true);

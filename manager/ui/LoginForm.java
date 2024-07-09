@@ -257,9 +257,11 @@ public class LoginForm extends JFrame {
 						System.out.println(vault.getVaultUrl());
 
 						if (vault.getUserType().equals("user")) {
-							// TODO : 사용자 전용 폼으로 이동
+							UserMainForm mainForm = new UserMainForm(LoginForm.this);
+							setVisible(false);
+							mainForm.setVisible(true);
 						} else if (vault.getUserType().equals("manager")) {
-							MainForm mainForm = new MainForm(LoginForm.this);
+							ManagerMainForm mainForm = new ManagerMainForm(LoginForm.this);
 							setVisible(false);
 							mainForm.setVisible(true);
 						}
@@ -342,9 +344,10 @@ public class LoginForm extends JFrame {
 					JRadioButton selectedRadioButton = (JRadioButton) e.getSource();
 					String selectedValue = selectedRadioButton.getText();
 					System.out.println("Selected: " + selectedValue);
-					vault.setVaultAuthType(selectedValue);
-
-					updateAuthParamPnl(selectedValue);
+					if (!selectedValue.equals(vault.getVaultAuthType())) {
+						vault.setVaultAuthType(selectedValue);
+						updateAuthParamPnl(selectedValue);
+					}
 				}
 			});
 		}

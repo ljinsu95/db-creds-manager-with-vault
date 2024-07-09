@@ -30,7 +30,7 @@ import common.model.Vault;
 import common.service.VaultDatabaseEngine;
 import common.service.VaultUserpassAuth;
 
-public class MainForm extends JDialog {
+public class ManagerMainForm extends JDialog {
 	private Vault vault;
 
 	private LoginForm owner;
@@ -53,7 +53,7 @@ public class MainForm extends JDialog {
 	private JButton btnLogout;
 	private JButton btnWithdraw;
 
-	public MainForm(LoginForm owner) {
+	public ManagerMainForm(LoginForm owner) {
 		this.owner = owner;
 		
 		init();
@@ -201,7 +201,7 @@ public class MainForm extends JDialog {
 				setBtnDBReg(false);
 				try {
 					vault.tokenLookupSelf();
-					DatabaseRegForm mainForm = new DatabaseRegForm(MainForm.this);
+					DatabaseRegForm mainForm = new DatabaseRegForm(ManagerMainForm.this);
 					setVisible(false);
 					mainForm.setVisible(true);
 				} catch (VaultException ve) {
@@ -217,7 +217,7 @@ public class MainForm extends JDialog {
 				setBtnUserReg(false);
 				try {
 					vault.tokenLookupSelf();
-					UserRegForm userRegForm = new UserRegForm(MainForm.this);
+					UserRegForm userRegForm = new UserRegForm(ManagerMainForm.this);
 					setVisible(false);
 					userRegForm.setVisible(true);
 				} catch (VaultException ve) {
@@ -242,7 +242,7 @@ public class MainForm extends JDialog {
 		btnLogout.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(MainForm.this, "로그아웃 되었습니다" + "\n" + "다음에 또 만나요!", "BYE JAVA",
+				JOptionPane.showMessageDialog(ManagerMainForm.this, "로그아웃 되었습니다" + "\n" + "다음에 또 만나요!", "BYE JAVA",
 						JOptionPane.PLAIN_MESSAGE);
 				dispose();
 				owner.setVisible(true);

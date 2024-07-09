@@ -29,7 +29,7 @@ import common.service.VaultUserpassAuth;
 public class UserRegForm extends JDialog {
     private Vault vault;
 
-    private MainForm owner;
+    private ManagerMainForm owner;
 
     private JLabel lblInfo;
     private JLabel lblUsername;
@@ -46,7 +46,7 @@ public class UserRegForm extends JDialog {
     private JPanel pnlSouth;
 
 
-    public UserRegForm(MainForm owner) {
+    public UserRegForm(ManagerMainForm owner) {
         this.owner = owner;
 
         init();
