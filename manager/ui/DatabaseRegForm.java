@@ -221,11 +221,14 @@ public class DatabaseRegForm extends JDialog {
 						new VaultUserpassAuth(vault).updateUserPolicy(user, new VaultUserpassAuth(vault).getUserPolicy(user)+", creds-"+txtDBType.getText());
 					}
 					
+				} catch (NullPointerException npe) {
+					System.out.println("user 없음.");
 				} catch (VaultException e) {
 					e.getStackTrace();
 				}
 
 				dispose();
+				owner.updatePnlDB();
 				owner.setVisible(true);
 				owner.setBtnDBReg(true);
 				// mainForm.setVisible(true);

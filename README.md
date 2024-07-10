@@ -33,7 +33,9 @@ Vault 기반 Database 계정 발급 프로그램
     
 
 ## 추후 작업 계획
-
+1. 사용자가 DB 계정 발급 후 DB Connection 정보를 가져오려면, read db-connection/config 권한이 추가적으로 필요. 혹은 kv secret engine 사용 고려.
+2. 사용자 DB 계정 발급 시 이전에 발급받은 lease 확인 후 삭제 플로우 추가 고려(한번 발급받은 후 재발급 시 동일 계정명으로 생성되어 에러 발생)
+3. 사용자 패스워드 변경
 
 ### 사용자 권한
 1. DB 계정 발급 (path : db-manager/creds/{{db_config_name}}-{{username}})

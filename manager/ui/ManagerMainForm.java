@@ -65,6 +65,17 @@ public class ManagerMainForm extends JDialog {
 
 	private void init() {
 		vault = Vault.getInstance();
+
+		// vault userpass auth check
+		try {
+			if (new VaultUserpassAuth(vault).authCheck() == null) {
+				System.out.println("Vault Userpass Auth 없음.");
+				new VaultUserpassAuth(vault).authEnable();
+			}
+		} catch (VaultException ve) {
+			ve.getStackTrace();
+		}
+
 		/* DB config 목록 조회 */
 		String[] configs = new VaultDatabaseEngine(vault).configList();
 		System.out.println("config : " + configs.toString());

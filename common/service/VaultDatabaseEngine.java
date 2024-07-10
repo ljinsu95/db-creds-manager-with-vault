@@ -90,4 +90,13 @@ public class VaultDatabaseEngine {
         String result = Common.getVaultRequest(vault.getVaultUrl() + "/v1/db-manager/roles/" + dbName, vault.getVaultToken());
         return result;
     }
+
+    /* 
+     * DB Dynamic Creds
+     */
+    public String creds(String dbName) {
+        System.out.println("Database Dynamic Creds");
+
+        return Common.getVaultRequest(vault.getVaultUrl()+"/v1/db-manager/creds/"+dbName+"-"+vault.getVaultUserNm(), vault.getVaultToken());
+    }
 }

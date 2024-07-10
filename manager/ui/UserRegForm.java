@@ -60,11 +60,6 @@ public class UserRegForm extends JDialog {
         try {
             // TODO : 사용자 생성 시 Policy 생성으로 변경 필요
             new VaultUserpassAuth(vault).createPolicy();
-            // vault userpass auth check
-            if (new VaultUserpassAuth(vault).authCheck() == null) {
-                System.out.println("Vault Userpass Auth 없음.");
-                new VaultUserpassAuth(vault).authEnable();
-            }
         } catch (VaultException e) {
             e.getStackTrace();
         }

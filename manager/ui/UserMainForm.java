@@ -3,6 +3,10 @@ package manager.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -19,7 +24,7 @@ import javax.swing.table.DefaultTableModel;
 import common.Common;
 import common.VaultException;
 import common.model.Vault;
-import common.service.VaultUserpassAuth;
+import common.service.VaultDatabaseEngine;
 
 public class UserMainForm extends JDialog {
 	private Vault vault;
@@ -39,7 +44,7 @@ public class UserMainForm extends JDialog {
 		
 		init();
 		setDisplay();
-		// addListners();
+		addListners();
 		// setcheck("사용자 정보 텍스트 등"); // 수정된 부분
 		showFrame();
 	}
@@ -130,6 +135,46 @@ public class UserMainForm extends JDialog {
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 
 		add(mainPanel, BorderLayout.CENTER);
+    }
+
+    private void addListners() {
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent we) {
+				dispose();
+				owner.setVisible(true);
+			}
+		});
+
+        /* 계정 발급 버튼 */
+        btnDBCreds.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				// setBtnDBReg(false);
+				try {
+					vault.tokenLookupSelf();
+                    System.out.println(tbDb.getValueAt(tbDb.getSelectedRow(), 0).toString());
+                    String dbName = tbDb.getValueAt(tbDb.getSelectedRow(), 0).toString();
+                    String credsInfo = new VaultDatabaseEngine(vault).creds(dbName);
+                    String dbPassword = Common.getNestedJsonToStr(credsInfo, "data", "password");
+					DatabaseCredsForm dbCredsForm = new DatabaseCredsForm(UserMainForm.this, "", vault.getVaultUserNm(), dbPassword);
+					setVisible(false);
+					dbCredsForm.setVisible(true);
+				} catch (VaultException ve) {
+					ve.getStackTrace();
+				}
+			}
+		});
+
+		btnLogout.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(UserMainForm.this, "로그아웃 되었습니다" + "\n" + "다음에 또 만나요!", "BYE JAVA",
+						JOptionPane.PLAIN_MESSAGE);
+				dispose();
+				owner.setVisible(true);
+			}
+		});
     }
 
     private void showFrame() {
