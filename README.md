@@ -28,8 +28,52 @@ Vault 기반 Database 계정 발급 프로그램
 
 ## 필요 권한
 ### 관리자
+```shell
+vault policy write db-manager-admin -<<EOF
+## Userpass Auth 관련
+# Auth 목록 조회
+path "sys/auth" {
+    capabilities = ["read", "list"]
+}
 
-### 사용자
+# Auth 활성화 및 사용자 생성 관련
+path "sys/auth/db-userpass/*" {
+    capabilities = ["read", "list", "create", "update"]
+}
+
+# 사용자 공통 권한 생성
+path "sys/policies/acl/db-user" {
+    capabilities = ["read", "create", "update"]
+}
+
+# 계정 발급 권한 생성
+path "sys/policies/acl/creds-*" {
+    capabilities = ["read", "create", "update"]
+}
+
+
+## DB Engine 관련
+path "auth/token/lookup-self" {
+    capabilities = ["read"]
+}
+
+path "sys/mounts" {
+  capabilities = ["read"]
+}
+
+path "sys/mounts/db-manager" {
+  capabilities = ["create", "update"]
+}
+
+path "db-manager/config/*" {
+  capabilities = ["read", "list", "create", "update"]
+}
+
+path "db-manager/roles/*" {
+  capabilities = ["read", "create", "update"]
+}
+EOF
+```
     
 
 ## 추후 작업 계획
@@ -37,19 +81,19 @@ Vault 기반 Database 계정 발급 프로그램
 2. 사용자 DB 계정 발급 시 이전에 발급받은 lease 확인 후 삭제 플로우 추가 고려(한번 발급받은 후 재발급 시 동일 계정명으로 생성되어 에러 발생)
 3. 사용자 패스워드 변경
 
-### 사용자 권한
+### 사용자에게 부여되는 권한
 1. DB 계정 발급 (path : db-manager/creds/{{db_config_name}}-{{username}})
 2. Userpass 패스워드 변경 (paht : auth/db-userpass/user/{{username}})
 ```shell
 # 본인의 패스워드 변경 권한 (추후 param - password만 허용하도록 변경)
-vault policy write -output-curl-string db-user -<<EOF
+vault policy write db-user -<<EOF
 path "auth/db-userpass/users/{{identity.entity.aliases.db-userpass.name}}" {
     capabilities = ["create", "update"]
 }
 EOF
 
 # ex) DB Connection Name : mysql
-vault policy write -output-curl-string creds-mysql -<<EOF
+vault policy write creds-mysql -<<EOF
 path "db-manager/creds/mysql-{{identity.entity.aliases.db-userpass.name}}" {
     capabilities = ["read"]
 }

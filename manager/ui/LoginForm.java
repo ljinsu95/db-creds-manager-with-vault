@@ -366,7 +366,7 @@ public class LoginForm extends JFrame {
 	}
 
 	public void showFrame() {
-		setTitle("DB Creds Manager With Vault - Manager");
+		setTitle("DB Creds Manager With Vault");
 		pack(); // 프레임의 크기를 컨텐츠에 맞게 조정
 		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때
 		// 사용
