@@ -170,6 +170,14 @@ public class LoginForm extends JFrame {
         buttonGroup.add(btnManager);
         buttonGroup.add(btnUser);
 
+		if (!userType.equals("user")) {
+			btnManager.setSelected(true);
+			btnUser.setSelected(false);
+		} else {
+			btnManager.setSelected(false);
+			btnUser.setSelected(true);
+		}
+
 
 		logBtn = new JButton("로그인");
 		logBtn.setPreferredSize(btnSize);
@@ -276,6 +284,7 @@ public class LoginForm extends JFrame {
 							// properties 파일의 값을 업데이트한다.
 							properties.setProperty("vault.url", vault.getVaultUrl());
 							properties.setProperty("vault.auth", vault.getVaultAuthType());
+							properties.setProperty("login.type", vault.getUserType());
 							if (cbAuthInfoSave.isSelected()) {
 								properties.setProperty("vault.token", vault.getVaultToken());
 								properties.setProperty("vault.usernm", vault.getVaultUserNm());
