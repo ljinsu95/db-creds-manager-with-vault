@@ -34,11 +34,12 @@ public class DatabaseCredsForm extends JDialog {
     private JTextField txtDBConnection;
     private JTextField txtDBUserName;
     private JTextField txtDBPassword;
+    private JTextField[] txtArr;
 
     private JButton btnDBConnectionCopy;
     private JButton btnDBUserNameCopy;
     private JButton btnDBPasswordCopy;
-    private JButton[] btnCopy;
+    private JButton[] btnCopyArr;
 
     private JButton btnOK;
 
@@ -77,6 +78,11 @@ public class DatabaseCredsForm extends JDialog {
         txtDBPassword = new JTextField(txtSize);
         txtDBPassword.setText(dbPassword);
 
+        txtArr = new JTextField[3];
+        txtArr[0] = txtDBConnection;
+        txtArr[1] = txtDBUserName;
+        txtArr[2] = txtDBPassword;
+
 		Dimension btnSize = new Dimension(100, 25);
 
 		btnDBConnectionCopy = new JButton("복사");
@@ -85,6 +91,12 @@ public class DatabaseCredsForm extends JDialog {
 		btnDBUserNameCopy.setPreferredSize(btnSize);
 		btnDBPasswordCopy = new JButton("복사");
 		btnDBPasswordCopy.setPreferredSize(btnSize);
+        
+        btnCopyArr = new JButton[3];
+        btnCopyArr[0] = btnDBConnectionCopy;
+        btnCopyArr[1] = btnDBUserNameCopy;
+        btnCopyArr[2] = btnDBPasswordCopy;
+
 		btnOK = new JButton("확인");
 		btnOK.setPreferredSize(btnSize);
     }
@@ -129,18 +141,21 @@ public class DatabaseCredsForm extends JDialog {
 			}
 		});
 
-		btnDBUserNameCopy.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent ae) {
-				ae.getActionCommand();
-                String text = txtDBUserName.getText();
-                StringSelection stringSelection = new StringSelection(text);
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, null);
-                JOptionPane.showMessageDialog(DatabaseCredsForm.this, "Text copied to clipboard!");
-
-			}
-		});
+        for (int i = 0; i < btnCopyArr.length; i++) {
+            int index = i;
+            btnCopyArr[i].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    ae.getActionCommand();
+                    String text = txtArr[index].getText();
+                    StringSelection stringSelection = new StringSelection(text);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(stringSelection, null);
+                    JOptionPane.showMessageDialog(DatabaseCredsForm.this, "Text copied to clipboard!");
+    
+                }
+            });
+        }
 
 
         btnOK.addActionListener(new ActionListener() {
