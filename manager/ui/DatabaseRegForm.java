@@ -10,12 +10,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -23,27 +22,28 @@ import javax.swing.border.EmptyBorder;
 
 import common.VaultException;
 import common.model.Vault;
+import common.model.VaultDatabasePlugin;
 import common.service.VaultDatabaseEngine;
 import common.service.VaultUserpassAuth;
 
 public class DatabaseRegForm extends JDialog {
 	private Vault vault;
+	private VaultDatabaseEngine dbEngine;
+	private VaultUserpassAuth userpassAuth;
 
 	private ManagerMainForm owner;
 
 	// private JButton dbRegBtn;
 
-	private JLabel lblDBType;
+	private JLabel lblDBConnName;
 	private JLabel lblDBHostname;
 	private JLabel lblDBPort;
 	private JLabel lblDBUsername;
 	private JLabel lblDBPassword;
 	private JLabel lblCreationStatements;
 
-	private ButtonGroup btnGroup;
-	private JRadioButton rbtnAuth[];
-
-	private JTextField txtDBType;
+	private JComboBox<String> cbxDBType;
+	private JTextField txtConnectionName;
 	private JTextField txtDBHostname;
 	private JTextField txtDBPort;
 	private JTextField txtDBUsername;
@@ -70,15 +70,19 @@ public class DatabaseRegForm extends JDialog {
 
 	private void init() {
         vault = Vault.getInstance();
-		// vault database engine check
-		String dbEnable = new VaultDatabaseEngine(vault).engineCheck();
+		dbEngine = new VaultDatabaseEngine(vault);
+		userpassAuth = new VaultUserpassAuth(vault);
+
+		// vault database engine 유무 확인
+		String dbEnable = dbEngine.engineCheck();
 		if (dbEnable == null) {
 			System.out.println("Vault Database Engine 없음.");
 			try {
-				new VaultDatabaseEngine(vault).engineEnable();
+				// Database Engine 활성화
+				dbEngine.engineEnable();
 			} catch (VaultException e) {
 				e.getStackTrace();
-			}	
+			}
 		} else if (dbEnable.equals("database")) {
 			System.out.println("Database Engine 활성화 상태");
 		} else {
@@ -91,8 +95,8 @@ public class DatabaseRegForm extends JDialog {
 		Dimension btnSize = new Dimension(100, 25);
 
 		// 레이블 설정
-		lblDBType = new JLabel("DB Type : ");
-		lblDBType.setPreferredSize(labelSize);
+		lblDBConnName = new JLabel("DB Connection Name : ");
+		lblDBConnName.setPreferredSize(labelSize);
 		lblDBHostname = new JLabel("DB Hostname : ");
 		lblDBHostname.setPreferredSize(labelSize);
 		lblDBPort = new JLabel("DB Port : ");
@@ -105,18 +109,14 @@ public class DatabaseRegForm extends JDialog {
 		lblCreationStatements.setPreferredSize(labelSize);
 
 		// 필드 설정
-		txtDBType = new JTextField(txtSize);
-		txtDBType.setText("mysql");
+		
+		// 콤보박스 생성 및 옵션 추가
+		cbxDBType = new JComboBox<>(VaultDatabasePlugin.getPluginNames());
+		// cbxDBType = new JComboBox<>(Vault.ARR_DB_TYPE);
+		cbxDBType.setPreferredSize(new Dimension(130, 30));
 
-		// btnGroup = new ButtonGroup();
-		// rbtnAuth = new JRadioButton[vaultAuthList.length];
-		// for (int i = 0; i < vaultAuthList.length; i++) {
-		// rbtnAuth[i] = new JRadioButton(vaultAuthList[i]);
-		// if (vaultAuthList[i].equals(vaultAuthType)) {
-		// rbtnAuth[i].setSelected(true);
-		// }
-		// btnGroup.add(rbtnAuth[i]);
-		// }
+		txtConnectionName = new JTextField(txtSize-13);
+		txtConnectionName.setText("connection");
 
 		txtDBHostname = new JTextField(txtSize);
 		txtDBHostname.setText("localhost");
@@ -127,7 +127,7 @@ public class DatabaseRegForm extends JDialog {
 		txtDBUsername.setText("admin");
 		txtDBPassword = new JTextField(txtSize);
 		taCreationStatements = new JTextArea(5, txtSize);
-		taCreationStatements.setText("CREATE USER '{{name}}'@'%' IDENTIFIED BY '{{password}}';\nGRANT SELECT ON *.* TO '{{name}}'@'%';");
+		taCreationStatements.setText(VaultDatabasePlugin.valueOf(cbxDBType.getSelectedItem().toString()).getStatements());
 		taCreationStatements.setLineWrap(false); // 줄 바꿈 비활성화
 
 		spCreationStatements = new JScrollPane(taCreationStatements);
@@ -152,8 +152,10 @@ public class DatabaseRegForm extends JDialog {
 		pnlCenter = new JPanel(new GridLayout(0, 1));
 
 		JPanel pnlDbType = new JPanel(flowLeft);
-		pnlDbType.add(lblDBType);
-		pnlDbType.add(txtDBType);
+		pnlDbType.add(lblDBConnName);
+		pnlDbType.add(cbxDBType);
+		pnlDbType.add(new JLabel("-"));
+		pnlDbType.add(txtConnectionName);
 
 		JPanel pnlHostname = new JPanel(flowLeft);
 		pnlHostname.add(lblDBHostname);
@@ -206,19 +208,39 @@ public class DatabaseRegForm extends JDialog {
 			}
 		});
 
+		/* 
+		 * DB Connection 등록
+		 */
 		btnDBReg.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				ae.getActionCommand();
+				String dbType = cbxDBType.getSelectedItem().toString();
+				String connectionName = dbType + "-" + txtConnectionName.getText();
+				connectionName = connectionName.toLowerCase();	// policy는 자동으로 lowcase로 생성되므로 connection name도 lowcase로 설정 (사용자는 policy 목록 기반으로 connection list를 출력)
+				String dbHostname = txtDBHostname.getText();
+				String dbUsername = txtDBUsername.getText();
+				String dbPassword = txtDBPassword.getText();
 				try {
-					new VaultDatabaseEngine(vault).configCreate(txtDBType.getText(), txtDBHostname.getText(), txtDBUsername.getText(), txtDBPassword.getText());
-					new VaultUserpassAuth(vault).createPolicy(txtDBType.getText());
+					// Vault DB Config 생성
+					dbEngine.configCreate(connectionName, dbType, dbHostname, dbUsername, dbPassword);
+
+					// Vault DB Config와 연결된 Role을 사용하여 DB Creds/Revoke 할 수 있는 권한 생성
+					userpassAuth.createPolicy(connectionName);
 					
-					new VaultDatabaseEngine(vault).createRole(txtDBType.getText(), taCreationStatements.getText());
+					// Vault DB Config와 연결된 Role 생성
+					dbEngine.createRole(connectionName, taCreationStatements.getText());
+
 					// 사용자 전용 role 생성
 					for (String user : vault.getUserList()) {
-						new VaultDatabaseEngine(vault).createRole(user, txtDBType.getText(), taCreationStatements.getText());
-						new VaultUserpassAuth(vault).updateUserPolicy(user, new VaultUserpassAuth(vault).getUserPolicy(user)+", creds-"+txtDBType.getText());
+						// Role 생성
+						dbEngine.createRole(user, connectionName, taCreationStatements.getText());
+
+						// 사용자가 보유한 Policies 조회
+						String userPolicies = userpassAuth.getUserPolicy(user);
+
+						// 사용자의 Policies에 DB Creds Policy 추가
+						userpassAuth.updateUserPolicy(user, userPolicies + ", creds-" + connectionName);
 					}
 					
 				} catch (NullPointerException npe) {
@@ -248,6 +270,7 @@ public class DatabaseRegForm extends JDialog {
 	}
 
 	private void showFrame() {
+		setTitle("DB Connection Registry");
 		pack();
 		setLocationRelativeTo(owner); // loginForm이 있는 위치를 기준으로 위치를 조정함
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE); // 다이얼로그를 닫을 때 해당 다이얼로그만 닫히고 프로그램이 종료되지는 않음

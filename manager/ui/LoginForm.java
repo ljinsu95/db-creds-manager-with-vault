@@ -269,6 +269,7 @@ public class LoginForm extends JFrame {
 							setVisible(false);
 							mainForm.setVisible(true);
 						} else if (vault.getUserType().equals("manager")) {
+							// TODO : 로그인 시도 전 권한 확인 필요
 							ManagerMainForm mainForm = new ManagerMainForm(LoginForm.this);
 							setVisible(false);
 							mainForm.setVisible(true);

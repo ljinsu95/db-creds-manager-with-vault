@@ -6,6 +6,7 @@ import java.util.Map;
 import common.Common;
 import common.VaultException;
 import common.model.Vault;
+import common.model.VaultDatabasePlugin;
 
 public class VaultDatabaseEngine {
     private Vault vault;
@@ -31,15 +32,15 @@ public class VaultDatabaseEngine {
     }
 
     // Database Engine Config 생성
-    public void configCreate(String dbType, String dbUrl, String dbUserNm, String dbUserPw) throws VaultException {
+    public void configCreate(String connName, String dbType, String dbUrl, String dbUserNm, String dbUserPw) throws VaultException {
         System.out.println("Database Config Create");
         Map<String, String> data = new HashMap<>();
-        data.put("plugin_name", "mysql-database-plugin");
+        data.put("plugin_name", VaultDatabasePlugin.valueOf(dbType).getPlugin());
         data.put("connection_url", "{{username}}:{{password}}@tcp("+ dbUrl + ")/");
         data.put("allowed_roles", "*");
         data.put("username", dbUserNm);
         data.put("password", dbUserPw);
-        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config/" + dbType, vault.getVaultToken(), data);
+        Common.postVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config/" + connName, vault.getVaultToken(), data);
     }
 
     // Database Engine Config List 확인
@@ -105,7 +106,6 @@ public class VaultDatabaseEngine {
      */
     public String revokeCreds(String dbName) throws VaultException {
         System.out.println("Database Creds lease revoke");
-        Map<String, String> data = new HashMap<>();
         Common.postVaultRequest(vault.getVaultUrl()+"/v1/sys/leases/revoke-prefix/db-manager/creds/"+dbName+"-"+vault.getVaultUserNm(), vault.getVaultToken(), null);
         return "";
     }
