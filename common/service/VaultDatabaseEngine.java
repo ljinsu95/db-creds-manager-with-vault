@@ -43,7 +43,7 @@ public class VaultDatabaseEngine {
     }
 
     // Database Engine Config List 확인
-    public String[] configList() {
+    public String[] configList() throws VaultException {
         System.out.println("Database Config List");
         String jsonConfigList = Common.getVaultRequest(vault.getVaultUrl() + "/v1/db-manager/config?list=true",
                 vault.getVaultToken());
@@ -94,9 +94,19 @@ public class VaultDatabaseEngine {
     /* 
      * DB Dynamic Creds
      */
-    public String creds(String dbName) {
+    public String creds(String dbName) throws VaultException {
         System.out.println("Database Dynamic Creds");
 
         return Common.getVaultRequest(vault.getVaultUrl()+"/v1/db-manager/creds/"+dbName+"-"+vault.getVaultUserNm(), vault.getVaultToken());
+    }
+
+    /* 
+     * DB Lease Revoke
+     */
+    public String revokeCreds(String dbName) throws VaultException {
+        System.out.println("Database Creds lease revoke");
+        Map<String, String> data = new HashMap<>();
+        Common.postVaultRequest(vault.getVaultUrl()+"/v1/sys/leases/revoke-prefix/db-manager/creds/"+dbName+"-"+vault.getVaultUserNm(), vault.getVaultToken(), null);
+        return "";
     }
 }

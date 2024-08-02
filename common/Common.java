@@ -196,8 +196,11 @@ public class Common {
     }
 
     // TODO : 실패 시 throw VaultException으로 교체 필요
-    public static String getVaultRequest(String vaultUrl, String vaultToken) {
+    public static String getVaultRequest(String vaultUrl, String vaultToken) throws VaultException {
         HttpURLConnection connection = null;
+        int responseCode = 999;
+        /* 결과값 */
+        StringBuilder response = new StringBuilder();
 
         try {
             URL url = new URL(vaultUrl);
@@ -207,10 +210,9 @@ public class Common {
             connection.setDoOutput(true);
 
 
-            int responseCode = connection.getResponseCode();
+            responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
                 String inputLine;
 
                 while ((inputLine = in.readLine()) != null) {
@@ -232,7 +234,12 @@ public class Common {
                 connection.disconnect(); // 연결 종료
             }
         }
-        return "";
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return response.toString();
+        } else {
+            throw new VaultException(response.toString());
+        }
     }
 
 

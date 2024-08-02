@@ -155,6 +155,13 @@ public class UserMainForm extends JDialog {
 					vault.tokenLookupSelf();
                     System.out.println(tbDb.getValueAt(tbDb.getSelectedRow(), 0).toString());
                     String dbName = tbDb.getValueAt(tbDb.getSelectedRow(), 0).toString();
+					// revoke creds lease
+					try {
+						new VaultDatabaseEngine(vault).revokeCreds(dbName);
+					} catch (Exception e) {
+						System.out.println("lease 없음.");
+					}
+					
                     String credsInfo = new VaultDatabaseEngine(vault).creds(dbName);
                     String dbPassword = Common.getNestedJsonToStr(credsInfo, "data", "password");
 					DatabaseCredsForm dbCredsForm = new DatabaseCredsForm(UserMainForm.this, "", vault.getVaultUserNm(), dbPassword);

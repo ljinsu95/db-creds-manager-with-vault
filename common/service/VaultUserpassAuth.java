@@ -41,7 +41,7 @@ public class VaultUserpassAuth {
     }
 
     // Userpass Auth User List
-    public String[] userList() {
+    public String[] userList() throws VaultException {
         System.out.println("Userpass Auth User List");
 
         String jsonUserList = Common.getVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users?list=true",
@@ -81,7 +81,7 @@ public class VaultUserpassAuth {
         Common.postVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+userName, vault.getVaultToken(), data);
     }
 
-    public String getUserPolicy(String userName) {
+    public String getUserPolicy(String userName) throws VaultException {
         System.out.println("Get User Policy");
         String result = Common.getVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+userName, vault.getVaultToken());
         System.out.println(result);
@@ -108,7 +108,7 @@ public class VaultUserpassAuth {
      */
     public void createPolicy(String dbConfigName) throws VaultException {
         System.out.println("User Policy Create");
-        String policy = "path \"db-manager/creds/"+dbConfigName+"-{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n    capabilities = [\"read\"]\n}\n";
+        String policy = "path \"db-manager/creds/"+dbConfigName+"-{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n    capabilities = [\"read\"]\n}\npath \"sys/leases/revoke-prefix/db-manager/creds/" + dbConfigName + "-{{identity.entity.aliases."+vault.getAccessor()+".name}}\" {\n  capabilities = [\"create\", \"update\", \"sudo\"]\n}";
         Map<String, String> data = new HashMap<>();
         data.put("policy", policy);
         String result = Common.postVaultRequest(vault.getVaultUrl() + "/v1/sys/policies/acl/creds-"+dbConfigName, vault.getVaultToken(), data);

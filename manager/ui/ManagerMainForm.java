@@ -76,13 +76,20 @@ public class ManagerMainForm extends JDialog {
 			ve.getStackTrace();
 		}
 
-		/* DB config 목록 조회 */
-		String[] configs = new VaultDatabaseEngine(vault).configList();
-		System.out.println("config : " + configs.toString());
+		String[] configs = null;
+		String[] users = null;
+		try {
+			/* DB config 목록 조회 */
+			configs = new VaultDatabaseEngine(vault).configList();
+			System.out.println("config : " + configs.toString());
+			
+			/* User 목록 조회 */
+			users = new VaultUserpassAuth(vault).userList();
+			System.out.println("config : " + users.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
-		/* User 목록 조회 */
-		String[] users = new VaultUserpassAuth(vault).userList();
-		System.out.println("config : " + users.toString());
 
 		/* 지워도 됩니다. Auth Check 동작 확인용 */
 		System.out.println("auth check : " + new VaultUserpassAuth(vault).authCheck());
@@ -274,9 +281,14 @@ public class ManagerMainForm extends JDialog {
 
 	/* DB 추가 후 리스트 업데이트 */
 	public void updatePnlDB() {
-		/* User 목록 조회 */
-		String[] configs = new VaultDatabaseEngine(vault).configList();
-		System.out.println("config : " + configs.toString());
+		String[] configs = null;
+		try {
+			/* User 목록 조회 */
+			configs = new VaultDatabaseEngine(vault).configList();
+			System.out.println("config : " + configs.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		// spUser.remove(tbUser);
 		// 테이블 모델 생성
@@ -295,9 +307,14 @@ public class ManagerMainForm extends JDialog {
 
 	/* User 추가 후 리스트 업데이트 */
 	public void updatePnlUser() {
-		/* User 목록 조회 */
-		String[] users = new VaultUserpassAuth(vault).userList();
-		System.out.println("config : " + users.toString());
+		String[] users = null;
+		try {
+			/* User 목록 조회 */
+			users = new VaultUserpassAuth(vault).userList();
+			System.out.println("config : " + users.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		// spUser.remove(tbUser);
 		// 테이블 모델 생성
