@@ -1,4 +1,4 @@
-package manager.ui;
+package src.ui.manager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -17,11 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import common.Common;
-import common.VaultException;
-import common.model.Vault;
-import common.service.VaultDatabaseEngine;
-import common.service.VaultUserpassAuth;
+import src.common.Common;
+import src.common.VaultException;
+import src.model.Vault;
+import src.service.VaultDatabaseEngine;
+import src.service.VaultUserpassAuth;
 
 /* User 생성
  * 

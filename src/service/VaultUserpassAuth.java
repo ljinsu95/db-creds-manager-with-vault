@@ -1,13 +1,13 @@
-package common.service;
+package src.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import common.Common;
-import common.VaultException;
-import common.model.Vault;
+import src.common.Common;
+import src.common.VaultException;
+import src.model.Vault;
 
 public class VaultUserpassAuth {
     private Vault vault;

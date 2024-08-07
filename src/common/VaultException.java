@@ -1,4 +1,4 @@
-package common;
+package src.common;
 
 public class VaultException extends Exception {
     public VaultException() {

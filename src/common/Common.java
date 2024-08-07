@@ -1,4 +1,4 @@
-package common;
+package src.common;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Common {
-    public static String CONFIG_FILE = "common/dev.config.properties";
+    public static String CONFIG_FILE = "src/common/dev.config.properties";
     public static Border MARGIN_10 = BorderFactory.createEmptyBorder(10, 10, 10, 10);
 
     public static int SUCCESS_CODE = 200;

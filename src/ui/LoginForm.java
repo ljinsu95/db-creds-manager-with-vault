@@ -1,10 +1,13 @@
-package manager.ui;
+package src.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.Taskbar;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -14,9 +17,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -29,8 +34,11 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
-import common.VaultException;
-import common.model.Vault;
+import src.Main;
+import src.common.VaultException;
+import src.model.Vault;
+import src.ui.manager.ManagerMainForm;
+import src.ui.user.UserMainForm;
 
 public class LoginForm extends JFrame {
 	// private static int AUTH_TOKEN = 0;
@@ -90,7 +98,7 @@ public class LoginForm extends JFrame {
 
 		Properties properties = new Properties();
 
-		try (InputStream input = new FileInputStream(common.Common.CONFIG_FILE)) {
+		try (InputStream input = new FileInputStream(src.common.Common.CONFIG_FILE)) {
 			// properties 파일을 읽어온다.
 			properties.load(input);
 
@@ -278,7 +286,7 @@ public class LoginForm extends JFrame {
 	
 						Properties properties = new Properties();
 	
-						try (InputStream input = new FileInputStream(common.Common.CONFIG_FILE)) {
+						try (InputStream input = new FileInputStream(src.common.Common.CONFIG_FILE)) {
 							// properties 파일을 읽어온다.
 							properties.load(input);
 	
@@ -302,10 +310,10 @@ public class LoginForm extends JFrame {
 								vaultPasswordTxt.setText("");
 							}
 							// Save the updated properties back to the file
-							try (OutputStream output = new FileOutputStream(common.Common.CONFIG_FILE)) {
+							try (OutputStream output = new FileOutputStream(src.common.Common.CONFIG_FILE)) {
 								properties.store(output, null);
 
-								System.out.println("Updated properties saved to " + common.Common.CONFIG_FILE);
+								System.out.println("Updated properties saved to " + src.common.Common.CONFIG_FILE);
 
 							} catch (IOException io) {
 								io.printStackTrace();
@@ -377,6 +385,26 @@ public class LoginForm extends JFrame {
 
 	public void showFrame() {
 		setTitle("DB Creds Manager With Vault");
+		// 아이콘 이미지 로드
+		// ImageIcon icon = new ImageIcon("/resources/lenini.png");
+        // setIconImage(icon.getImage());
+		//this is new since JDK 9
+		final Taskbar taskbar = Taskbar.getTaskbar();
+
+		//loading an image from a file
+        final Toolkit defaultToolkit = Toolkit.getDefaultToolkit();
+        final URL imageResource = Main.class.getClassLoader().getResource("/resources/lenini.png");
+        final Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("/resources/lenini.png"));
+		try {
+			//set icon for mac os (and other systems which do support this method)
+			taskbar.setIconImage(image);
+			this.setIconImage(image);
+		} catch (final UnsupportedOperationException e) {
+			System.out.println("The os does not support: 'taskbar.setIconImage'");
+		} catch (final SecurityException e) {
+			System.out.println("There was a security exception for: 'taskbar.setIconImage'");
+		}
+
 		pack(); // 프레임의 크기를 컨텐츠에 맞게 조정
 		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때
 		// 사용

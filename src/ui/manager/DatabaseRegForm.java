@@ -1,4 +1,4 @@
-package manager.ui;
+package src.ui.manager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -20,11 +20,11 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import common.VaultException;
-import common.model.Vault;
-import common.model.VaultDatabasePlugin;
-import common.service.VaultDatabaseEngine;
-import common.service.VaultUserpassAuth;
+import src.common.VaultException;
+import src.model.Vault;
+import src.model.VaultDatabasePlugin;
+import src.service.VaultDatabaseEngine;
+import src.service.VaultUserpassAuth;
 
 public class DatabaseRegForm extends JDialog {
 	private Vault vault;

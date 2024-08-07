@@ -1,12 +1,12 @@
-package common.service;
+package src.service;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import common.Common;
-import common.VaultException;
-import common.model.Vault;
-import common.model.VaultDatabasePlugin;
+import src.common.Common;
+import src.common.VaultException;
+import src.model.Vault;
+import src.model.VaultDatabasePlugin;
 
 public class VaultDatabaseEngine {
     private Vault vault;

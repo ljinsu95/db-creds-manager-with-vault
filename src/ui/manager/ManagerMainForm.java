@@ -1,4 +1,4 @@
-package manager.ui;
+package src.ui.manager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,10 +25,11 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
-import common.VaultException;
-import common.model.Vault;
-import common.service.VaultDatabaseEngine;
-import common.service.VaultUserpassAuth;
+import src.common.VaultException;
+import src.model.Vault;
+import src.service.VaultDatabaseEngine;
+import src.service.VaultUserpassAuth;
+import src.ui.LoginForm;
 
 public class ManagerMainForm extends JDialog {
 	private Vault vault;

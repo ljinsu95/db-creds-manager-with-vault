@@ -1,6 +1,7 @@
+package src;
 import javax.swing.SwingUtilities;
 
-import manager.ui.LoginForm;
+import src.ui.LoginForm;
 
 public class Main {
     public static void main(String[] args) {

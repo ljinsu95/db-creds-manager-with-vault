@@ -1,4 +1,4 @@
-package manager.ui;
+package src.ui.user;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

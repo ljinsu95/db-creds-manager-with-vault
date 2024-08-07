@@ -1,4 +1,4 @@
-package common.model;
+package src.model;
 
 /* 
  * Vault Database Config 구성 시 필요한 DB 별 기본 세팅 값

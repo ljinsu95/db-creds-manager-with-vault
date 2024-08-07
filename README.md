@@ -102,7 +102,10 @@ EOF
     - vault login -method=db-userpass -username=$USER_NAME -password=$USER_PW
 
 2. DB 계정 발급
-    - vault write db-manager/creds/$USER_NAME
+    - 기존 lease revoke
+        - vault write sys/lease/....
+    - DB 계정 발급
+        - vault write db-manager/creds/$USER_NAME
     
 
 ### 사용자에게 부여되는 권한
@@ -116,9 +119,9 @@ path "auth/db-userpass/users/{{identity.entity.aliases.db-userpass.name}}" {
 }
 EOF
 
-# ex) DB Connection Name : mysql
-vault policy write creds-mysql -<<EOF
-path "db-manager/creds/mysql-{{identity.entity.aliases.db-userpass.name}}" {
+# ex) DB Connection Name : mysql-test
+vault policy write creds-mysql-test -<<EOF
+path "db-manager/creds/mysql-test-{{identity.entity.aliases.db-userpass.name}}" {
     capabilities = ["read"]
 }
 EOF

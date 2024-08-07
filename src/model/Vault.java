@@ -1,11 +1,11 @@
-package common.model;
+package src.model;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import common.Common;
-import common.VaultException;
+import src.common.Common;
+import src.common.VaultException;
 
 /**
  * Vault관련 정보를 담고있는 싱글톤 클래스

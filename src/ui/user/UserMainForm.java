@@ -1,4 +1,4 @@
-package manager.ui;
+package src.ui.user;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,10 +21,11 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-import common.Common;
-import common.VaultException;
-import common.model.Vault;
-import common.service.VaultDatabaseEngine;
+import src.common.Common;
+import src.common.VaultException;
+import src.model.Vault;
+import src.service.VaultDatabaseEngine;
+import src.ui.LoginForm;
 
 public class UserMainForm extends JDialog {
 	private Vault vault;
