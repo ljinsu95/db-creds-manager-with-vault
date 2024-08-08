@@ -17,11 +17,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -35,8 +33,10 @@ import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
 import src.Main;
+import src.common.Common;
 import src.common.VaultException;
 import src.model.Vault;
+import src.service.VaultUserpassAuth;
 import src.ui.manager.ManagerMainForm;
 import src.ui.user.UserMainForm;
 
@@ -98,7 +98,7 @@ public class LoginForm extends JFrame {
 
 		Properties properties = new Properties();
 
-		try (InputStream input = new FileInputStream(src.common.Common.CONFIG_FILE)) {
+		try (InputStream input = new FileInputStream(Common.CONFIG_FILE)) {
 			// properties 파일을 읽어온다.
 			properties.load(input);
 
@@ -166,7 +166,7 @@ public class LoginForm extends JFrame {
 		vaultTokenTxt.setText(vaultToken);
 
 		cbAuthInfoSave = new JCheckBox("로그인 정보 저장");
-		if(loginInfoSave.equals("true")) {
+		if (loginInfoSave.equals("true")) {
 			cbAuthInfoSave.setSelected(true);
 		}
 
@@ -175,8 +175,8 @@ public class LoginForm extends JFrame {
 		btnUser = new JToggleButton("사용자");
 
 		ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(btnManager);
-        buttonGroup.add(btnUser);
+		buttonGroup.add(btnManager);
+		buttonGroup.add(btnUser);
 
 		if (!userType.equals("user")) {
 			btnManager.setSelected(true);
@@ -185,7 +185,6 @@ public class LoginForm extends JFrame {
 			btnManager.setSelected(false);
 			btnUser.setSelected(true);
 		}
-
 
 		logBtn = new JButton("로그인");
 		logBtn.setPreferredSize(btnSize);
@@ -264,7 +263,7 @@ public class LoginForm extends JFrame {
 				// Vault URL Health Check
 				if (!vault.healthCheck()) {
 					JOptionPane.showConfirmDialog(LoginForm.this, "Vault URL 정보가 일치하지 않습니다.", "RETRY",
-					JOptionPane.WARNING_MESSAGE);
+							JOptionPane.WARNING_MESSAGE);
 				} else {
 					// Vault Login 시도
 					try {
@@ -277,19 +276,23 @@ public class LoginForm extends JFrame {
 							setVisible(false);
 							mainForm.setVisible(true);
 						} else if (vault.getUserType().equals("manager")) {
-							// TODO : 로그인 시도 전 권한 확인 필요
-							ManagerMainForm mainForm = new ManagerMainForm(LoginForm.this);
-							setVisible(false);
-							mainForm.setVisible(true);
+							// 권한이 없을 경우 403 에러, 패스가 존재하지 않을 경우 404 에러 발생.
+							if (new VaultUserpassAuth(vault).policyCheck()) {
+								ManagerMainForm mainForm = new ManagerMainForm(LoginForm.this);
+								setVisible(false);
+								mainForm.setVisible(true);
+							} else {
+								JOptionPane.showConfirmDialog(LoginForm.this, "관리자 권한이 부족합니다.", "MANAGER AUTH CHECK",
+								JOptionPane.WARNING_MESSAGE);
+							}
 						}
-	
-	
+
 						Properties properties = new Properties();
-	
-						try (InputStream input = new FileInputStream(src.common.Common.CONFIG_FILE)) {
+
+						try (InputStream input = new FileInputStream(Common.CONFIG_FILE)) {
 							// properties 파일을 읽어온다.
 							properties.load(input);
-	
+
 							// properties 파일의 값을 업데이트한다.
 							properties.setProperty("vault.url", vault.getVaultUrl());
 							properties.setProperty("vault.auth", vault.getVaultAuthType());
@@ -304,16 +307,16 @@ public class LoginForm extends JFrame {
 								properties.setProperty("vault.usernm", "");
 								properties.setProperty("vault.userpw", "");
 								properties.setProperty("login.info.save", "false");
-								
+
 								vaultTokenTxt.setText("");
 								vaultUsernameTxt.setText("");
 								vaultPasswordTxt.setText("");
 							}
 							// Save the updated properties back to the file
-							try (OutputStream output = new FileOutputStream(src.common.Common.CONFIG_FILE)) {
+							try (OutputStream output = new FileOutputStream(Common.CONFIG_FILE)) {
 								properties.store(output, null);
 
-								System.out.println("Updated properties saved to " + src.common.Common.CONFIG_FILE);
+								System.out.println("Updated properties saved to " + Common.CONFIG_FILE);
 
 							} catch (IOException io) {
 								io.printStackTrace();
@@ -331,27 +334,27 @@ public class LoginForm extends JFrame {
 		});
 
 		/* 사용자 타입 전환 */
-        btnManager.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (btnManager.isSelected()) {
-                    btnManager.setSelected(true);
-                    btnUser.setSelected(false);
+		btnManager.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (btnManager.isSelected()) {
+					btnManager.setSelected(true);
+					btnUser.setSelected(false);
 					vault.setUserType("manager");
-                }
-            }
-        });
+				}
+			}
+		});
 
-        btnUser.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (btnUser.isSelected()) {
-                    btnUser.setSelected(true);
-                    btnManager.setSelected(false);
+		btnUser.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (btnUser.isSelected()) {
+					btnUser.setSelected(true);
+					btnManager.setSelected(false);
 					vault.setUserType("user");
-                }
-            }
-        });
+				}
+			}
+		});
 
 		// 라디오 버튼
 		for (int i = 0; i < vaultAuthList.length; i++) {
@@ -387,16 +390,16 @@ public class LoginForm extends JFrame {
 		setTitle("DB Creds Manager With Vault");
 		// 아이콘 이미지 로드
 		// ImageIcon icon = new ImageIcon("/resources/lenini.png");
-        // setIconImage(icon.getImage());
-		//this is new since JDK 9
+		// setIconImage(icon.getImage());
+		// this is new since JDK 9
 		final Taskbar taskbar = Taskbar.getTaskbar();
 
-		//loading an image from a file
-        final Toolkit defaultToolkit = Toolkit.getDefaultToolkit();
-        final URL imageResource = Main.class.getClassLoader().getResource("/resources/lenini.png");
-        final Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("/resources/lenini.png"));
+		// loading an image from a file
+		// final Toolkit defaultToolkit = Toolkit.getDefaultToolkit();
+		// final URL imageResource = Main.class.getClassLoader().getResource("/resources/lenini.png");
+		final Image image = Toolkit.getDefaultToolkit().getImage(Main.class.getResource("/resources/lenini.png"));
 		try {
-			//set icon for mac os (and other systems which do support this method)
+			// set icon for mac os (and other systems which do support this method)
 			taskbar.setIconImage(image);
 			this.setIconImage(image);
 		} catch (final UnsupportedOperationException e) {
@@ -406,10 +409,7 @@ public class LoginForm extends JFrame {
 		}
 
 		pack(); // 프레임의 크기를 컨텐츠에 맞게 조정
-		// setLocale(null); // 시스템의 기본 로케일로 설정된다는 의미, 이 메서드는 주로 다국어 지원을 고려하여 프로그램 개발 될 때
-		// 사용
-		setLocationRelativeTo(null); // 프레임을 화면 중앙에 위치 setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); // 프레임이 닫힐 때 아무
-										// 동작도 하지 않도록 설정
+		setLocationRelativeTo(null); // 프레임을 화면 중앙에 위치
 		setResizable(false); // 프레임의 크기 고정
 		setVisible(true);
 		updateAuthParamPnl(vault.getVaultAuthType());
@@ -427,7 +427,7 @@ public class LoginForm extends JFrame {
 			pnlCenter.repaint();
 		} else if (authType.equals(Vault.AUTH_USERNAME)) {
 			pnlCenter.remove(tokenPnl);
-			pnlCenter.remove(pnlCenter.getComponentCount()-1);
+			pnlCenter.remove(pnlCenter.getComponentCount() - 1);
 			pnlCenter.add(usernamePnl);
 			pnlCenter.add(passwordPnl);
 

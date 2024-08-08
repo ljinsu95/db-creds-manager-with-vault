@@ -1,5 +1,7 @@
 package src.service;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +16,60 @@ public class VaultUserpassAuth {
 
     public VaultUserpassAuth(Vault vault) {
         this.vault = vault;
+    }
+
+    /* 
+     * policy check
+     * 사용자 타입에 다른 Vault 권한(Auth List, DB List) 확인 메소드
+     * responseCode = 403 : 권한 부족
+     * responseCode = 404 : 존재하지 않는 패스
+     * responseCode = 200 : 존재하는 패스
+     */
+    public boolean policyCheck() {
+        HttpURLConnection connection = null;
+        int responseCode = 000;
+        try {
+            System.out.println("Auth(db-userpass) Policy Check");
+
+            URL urlAuth = new URL(vault.getVaultUrl() + "/v1/auth/db-userpass/users?list=true");
+            connection = (HttpURLConnection) urlAuth.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-Vault-Token", vault.getVaultToken());
+            
+            responseCode = connection.getResponseCode();
+            
+            System.out.println("Response Code: " + responseCode);
+
+            if (responseCode == 403 || responseCode == 000) {
+                return false;
+            }
+
+            System.out.println("Secrets(db-manager) Policy Check");
+
+            URL urlSecrets = new URL(vault.getVaultUrl() + "/v1/db-manager/config?list=true");
+            connection = (HttpURLConnection) urlSecrets.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-Vault-Token", vault.getVaultToken());
+            
+            responseCode = connection.getResponseCode();
+
+            if (responseCode == 403 || responseCode == 000) {
+                return false;
+            }
+            
+            System.out.println("Response Code: " + responseCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect(); // 연결 종료
+            }
+        }
+        if (responseCode == 404 || responseCode == 200) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /* db-userpass Auth 확인 */
