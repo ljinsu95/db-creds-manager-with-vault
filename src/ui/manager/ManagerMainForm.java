@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -49,6 +50,7 @@ public class ManagerMainForm extends JDialog {
 	private JTable tbUser;
 	private JLabel lblUserDetail;
 	private JButton btnUserReg;
+	private JButton btnUserDel;
 	private JPanel pnlUser;
 
 	private JButton btnLogout;
@@ -56,7 +58,7 @@ public class ManagerMainForm extends JDialog {
 
 	public ManagerMainForm(LoginForm owner) {
 		this.owner = owner;
-		
+
 		init();
 		setDisplay();
 		addListners();
@@ -83,14 +85,13 @@ public class ManagerMainForm extends JDialog {
 			/* DB config 목록 조회 */
 			configs = new VaultDatabaseEngine(vault).configList();
 			System.out.println("config : " + configs.toString());
-			
+
 			/* User 목록 조회 */
 			users = new VaultUserpassAuth(vault).userList();
 			System.out.println("config : " + users.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 
 		/* 지워도 됩니다. Auth Check 동작 확인용 */
 		System.out.println("auth check : " + new VaultUserpassAuth(vault).authCheck());
@@ -100,57 +101,64 @@ public class ManagerMainForm extends JDialog {
 
 		/* DB List 출력 화면 Start */
 		/* DB List 화면 */
-        DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"DB Type"}, 0);
-        for (int i = 0; i < configs.length; i++) {
-			tableModel.addRow(new Object[]{configs[i]});
-        }
-        tbDb = new JTable(tableModel);
-        tbDb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		DefaultTableModel tableModel = new DefaultTableModel(new Object[] { "DB Type" }, 0);
+		for (int i = 0; i < configs.length; i++) {
+			tableModel.addRow(new Object[] { configs[i] });
+		}
+		tbDb = new JTable(tableModel);
+		tbDb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// tbDb.setSize(btnSize);
-		
+
 		/* 스크롤 추가 */
-        spDb = new JScrollPane(tbDb);
+		spDb = new JScrollPane(tbDb);
 		spDb.setPreferredSize(new Dimension(200, 100));
-		
+
 		/* 상세 내용 출력 레이블 */
-        lblDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
-        lblDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		
+		lblDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
+		lblDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
 		/* DB 등록 버튼 */
 		// TODO : 등록 버튼 색상 변경 필요
 		btnDBReg = new JButton("DB 등록");
 		btnDBReg.setPreferredSize(btnSize);
 		/* DB List 출력 화면 End */
-		
-		
+
 		/* User List 출력 화면 Start */
 		// 테이블 모델 생성
-		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[] { "User List" }, 0);
 		for (int i = 0; i < users.length; i++) {
-			dtmUserList.addRow(new Object[]{users[i]});
+			dtmUserList.addRow(new Object[] { users[i] });
 		}
-		
+
 		// JTable 생성
 		tbUser = new JTable(dtmUserList);
 		tbUser.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// tbDb.setSize(btnSize);
-		
+
 		// JScrollPane 생성 및 JTable 추가
 		spUser = new JScrollPane(tbUser);
 		spUser.setPreferredSize(new Dimension(200, 100));
-		
+
 		// 상세 내용을 표시할 JLabel 생성
 		lblUserDetail = new JLabel("상세 내용: 마우스를 항목 위에 올려보세요");
 		lblUserDetail.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		
+		// try {
+		// UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 		btnUserReg = new JButton("User 등록");
 		btnUserReg.setPreferredSize(btnSize);
+		btnUserDel = new JButton("User 삭제");
+		btnUserDel.setPreferredSize(btnSize);
+		// btnUserReg.setBackground(Color.CYAN);
+		// btnUserReg.setOpaque(true);
+		// btnUserReg.setBorderPainted(false);
+		// btnUserReg.setForeground(Color.WHITE);
 		/* User List 출력 화면 End */
-		
-		
+
 		check = new JTextArea(10, 30);
 		check.setEditable(false);
-
 
 		btnLogout = new JButton("로그아웃");
 		btnLogout.setPreferredSize(btnSize);
@@ -189,7 +197,9 @@ public class ManagerMainForm extends JDialog {
 		pnlUser = new JPanel(new BorderLayout());
 
 		JPanel pnlCCEast = new JPanel();
+		pnlCCEast.setLayout(new BoxLayout(pnlCCEast, BoxLayout.Y_AXIS));
 		pnlCCEast.add(btnUserReg);
+		pnlCCEast.add(btnUserDel);
 
 		pnlUser.add(spUser, BorderLayout.WEST);
 		pnlUser.add(lblUserDetail, BorderLayout.CENTER);
@@ -197,7 +207,6 @@ public class ManagerMainForm extends JDialog {
 
 		pnlCenter.add(pnlCNorth, BorderLayout.NORTH);
 		pnlCenter.add(pnlUser, BorderLayout.CENTER);
-
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		mainPanel.add(pnlCenter, BorderLayout.CENTER);
@@ -245,18 +254,45 @@ public class ManagerMainForm extends JDialog {
 			}
 		});
 
+		/* 사용자 삭제 */
+		btnUserDel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				String username = tbUser.getValueAt(tbUser.getSelectedRow(), 0).toString();
+				// 실행 여부 OK = 0 / NO = 1
+				int result = JOptionPane.showConfirmDialog(
+						ManagerMainForm.this, "사용자(" + username + ")를 삭제 하시겠습니까?",
+						"User Delete",
+						JOptionPane.YES_NO_OPTION);
+				if (result == JOptionPane.YES_OPTION) {
+					System.out.println("실행 됩니당.");
+					try {
+						new VaultUserpassAuth(vault).deleteUser(username);
+						updatePnlUser();
+						JOptionPane.showMessageDialog(ManagerMainForm.this, "사용자 삭제 완료", "사용자 삭제 완료",
+								JOptionPane.PLAIN_MESSAGE);
+					} catch (VaultException ve) {
+						ve.getStackTrace();
+						updatePnlUser();
+						JOptionPane.showMessageDialog(ManagerMainForm.this, "사용자 삭제 중 에러 발생", "ERROR",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+
 		// JTable에 마우스 이벤트 리스너 추가
-        tbDb.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int row = tbDb.rowAtPoint(e.getPoint());
-                int col = tbDb.columnAtPoint(e.getPoint());
-                if (row != -1 && col != -1) {
-                    Object value = tbDb.getValueAt(row, col);
-                    lblDetail.setText("상세 내용: " + value.toString());
-                }
-            }
-        });
+		tbDb.addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				int row = tbDb.rowAtPoint(e.getPoint());
+				int col = tbDb.columnAtPoint(e.getPoint());
+				if (row != -1 && col != -1) {
+					Object value = tbDb.getValueAt(row, col);
+					lblDetail.setText("상세 내용: " + value.toString());
+				}
+			}
+		});
 
 		btnLogout.addActionListener(new ActionListener() {
 			@Override
@@ -293,9 +329,9 @@ public class ManagerMainForm extends JDialog {
 
 		// spUser.remove(tbUser);
 		// 테이블 모델 생성
-		DefaultTableModel dtmDbList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		DefaultTableModel dtmDbList = new DefaultTableModel(new Object[] { "User List" }, 0);
 		for (int i = 0; i < configs.length; i++) {
-			dtmDbList.addRow(new Object[]{configs[i]});
+			dtmDbList.addRow(new Object[] { configs[i] });
 		}
 
 		// JTable 생성
@@ -319,9 +355,9 @@ public class ManagerMainForm extends JDialog {
 
 		// spUser.remove(tbUser);
 		// 테이블 모델 생성
-		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[]{"User List"}, 0);
+		DefaultTableModel dtmUserList = new DefaultTableModel(new Object[] { "User List" }, 0);
 		for (int i = 0; i < users.length; i++) {
-			dtmUserList.addRow(new Object[]{users[i]});
+			dtmUserList.addRow(new Object[] { users[i] });
 		}
 
 		// JTable 생성
@@ -336,7 +372,7 @@ public class ManagerMainForm extends JDialog {
 	public void setBtnDBReg(Boolean flag) {
 		btnDBReg.setEnabled(flag);
 	}
-	
+
 	/* USER 등록버튼 ON/OFF */
 	public void setBtnUserReg(Boolean flag) {
 		btnUserReg.setEnabled(flag);

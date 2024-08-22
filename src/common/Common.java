@@ -195,6 +195,51 @@ public class Common {
         }
     }
 
+    public static String deleteVaultRequest(String vaultUrl, String vaultToken) throws VaultException {
+        System.out.println("호출 URL : " + vaultUrl);
+        HttpURLConnection connection = null;
+        int responseCode = 999;
+        BufferedReader responseBody = null;
+        /* 결과값 */
+        StringBuilder response = new StringBuilder();
+
+        try {
+            URL url = new URL(vaultUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            connection.setRequestProperty("X-Vault-Token", vaultToken);
+
+            responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+            if (responseCode >= 200 && responseCode < 300) {
+                responseBody = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                responseBody = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            }
+            String inputLine;
+
+            while ((inputLine = responseBody.readLine()) != null) {
+                response.append(inputLine);
+            }
+            responseBody.close();
+
+            System.out.println("Response: " + response.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect(); // 연결 종료
+            }
+        }
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return response.toString();
+        } else {
+            throw new VaultException(response.toString());
+        }
+    }
+
     // TODO : 실패 시 throw VaultException으로 교체 필요
     public static String getVaultRequest(String vaultUrl, String vaultToken) throws VaultException {
         HttpURLConnection connection = null;

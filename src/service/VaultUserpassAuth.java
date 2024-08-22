@@ -130,6 +130,14 @@ public class VaultUserpassAuth {
         System.out.println(result);
     }
 
+    /* 사용자 삭제 */
+    public void deleteUser(String username) throws VaultException {
+        System.out.println("User Delete");
+
+        String result = Common.deleteVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+username, vault.getVaultToken());
+        System.out.println(result);
+    }
+
     public void updateUserPolicy(String userName, String policyName) throws VaultException {
         System.out.println("User Update Policy");
         Map<String, String> data = new HashMap<>();

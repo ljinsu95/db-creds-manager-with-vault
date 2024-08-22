@@ -5,7 +5,7 @@ Vault 기반 Database 계정 발급 프로그램 (`현재 MySQL만 지원`)
 ### 특징
 1. 관리자는 UI를 통해 Vault와 Database 연동
 
-2. 관리자는 UI를 통해 Vault 사용자 계정 생성
+2. 관리자는 UI를 통해 Vault 사용자 계정 생성 및 삭제
 
 3. 사용자는 UI를 통해 DataBase 계정 발급
 
