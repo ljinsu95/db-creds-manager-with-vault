@@ -38,6 +38,7 @@ public class UserMainForm extends JDialog {
 	private JLabel lblDetail;
 
     private JButton btnDBCreds;
+	private JButton btnPwChange;
 	private JButton btnLogout;
 
     public UserMainForm(LoginForm owner) {
@@ -57,7 +58,7 @@ public class UserMainForm extends JDialog {
         try {
             policyStrArr = Common.getNestedJsonToStrArr(vault.tokenLookupSelf(), "data", "policies");
         } catch (VaultException ve) {
-            ve.getStackTrace();
+            ve.printStackTrace();
         }
         // String policies = new VaultUserpassAuth(vault).getUserPolicy(vault.getVaultUserNm());
         // String[] policyStrArr = policies.replace(" ", "").split(",");
@@ -106,6 +107,8 @@ public class UserMainForm extends JDialog {
 
         btnLogout = new JButton("로그아웃");
 		btnLogout.setPreferredSize(btnSize);
+        btnPwChange = new JButton("패스워드 변경");
+		btnPwChange.setPreferredSize(btnSize);
     }
 
     private void setDisplay() {
@@ -127,8 +130,9 @@ public class UserMainForm extends JDialog {
 
 		pnlCenter.add(pnlCNorth, BorderLayout.NORTH);
 
-		JPanel southPanel = new JPanel();
-		southPanel.add(btnLogout);
+		JPanel southPanel = new JPanel(new BorderLayout());
+		southPanel.add(btnPwChange, BorderLayout.WEST);
+		southPanel.add(btnLogout, BorderLayout.EAST);
 
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
@@ -169,8 +173,18 @@ public class UserMainForm extends JDialog {
 					setVisible(false);
 					dbCredsForm.setVisible(true);
 				} catch (VaultException ve) {
-					ve.getStackTrace();
+					ve.printStackTrace();
 				}
+			}
+		});
+
+		/* 패스워드 변경 버튼 */
+		btnPwChange.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UserUpdateForm userUpdateForm = new UserUpdateForm(UserMainForm.this);
+				setVisible(false);
+				userUpdateForm.setVisible(true);
 			}
 		});
 
@@ -186,6 +200,7 @@ public class UserMainForm extends JDialog {
     }
 
     private void showFrame() {
+		setTitle(vault.getVaultUserNm());
 		pack();
 		setLocationRelativeTo(owner); // loginForm이 있는 위치를 기준으로 위치를 조정함
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE); // 다이얼로그를 닫을 때 해당 다이얼로그만 닫히고 프로그램이 종료되지는 않음

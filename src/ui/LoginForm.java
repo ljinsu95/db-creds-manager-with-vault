@@ -325,7 +325,7 @@ public class LoginForm extends JFrame {
 							ex.printStackTrace();
 						}
 					} catch (VaultException ve) {
-						ve.getStackTrace();
+						ve.printStackTrace();
 						JOptionPane.showConfirmDialog(LoginForm.this, "로그인 정보가 일치하지 않습니다.", "RETRY",
 								JOptionPane.WARNING_MESSAGE);
 					}

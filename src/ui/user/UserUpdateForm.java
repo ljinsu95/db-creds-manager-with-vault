@@ -1,4 +1,4 @@
-package src.ui.manager;
+package src.ui.user;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -17,26 +17,26 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import src.common.Common;
 import src.common.VaultException;
 import src.model.Vault;
-import src.service.VaultDatabaseEngine;
 import src.service.VaultUserpassAuth;
 
-/* User 생성
+/* User Password 업데이드
  * 
  */
-public class UserRegForm extends JDialog {
+public class UserUpdateForm extends JDialog {
     private Vault vault;
 
-    private ManagerMainForm owner;
+    private UserMainForm owner;
 
     private JLabel lblInfo;
     private JLabel lblUsername;
     private JLabel lblPassword;
+    private JLabel lblRePassword;
 
     private JTextField txtUsername;
     private JTextField txtPassword;
+    private JTextField txtRePassword;
 
     private JButton btnUserReg;
     private JButton btnCancel;
@@ -46,7 +46,7 @@ public class UserRegForm extends JDialog {
     private JPanel pnlSouth;
 
 
-    public UserRegForm(ManagerMainForm owner) {
+    public UserUpdateForm(UserMainForm owner) {
         this.owner = owner;
 
         init();
@@ -57,12 +57,6 @@ public class UserRegForm extends JDialog {
 
     private void init() {
         vault = Vault.getInstance();
-        try {
-            // TODO : 사용자 생성 시 Policy 생성으로 변경 필요
-            new VaultUserpassAuth(vault).createPolicy();
-        } catch (VaultException e) {
-            e.printStackTrace();
-        }
 
         // 사이즈 통일
 		Dimension labelSize = new Dimension(120, 30);
@@ -73,14 +67,19 @@ public class UserRegForm extends JDialog {
         lblInfo = new JLabel("사용자 생성 후 사용자가 직접 패스워드 변경이 가능합니다.");
         lblUsername = new JLabel("Username : ");
         lblUsername.setPreferredSize(labelSize);
-        lblPassword = new JLabel("Password : ");
+        lblPassword = new JLabel("New Password : ");
         lblPassword.setPreferredSize(labelSize);
+        lblRePassword = new JLabel("Re-enter Password : ");
+        lblRePassword.setPreferredSize(labelSize);
 
         /* 필드 설정 */
         txtUsername = new JTextField(txtSize);
+        txtUsername.setText(vault.getVaultUserNm());
+        txtUsername.setEnabled(false);
         txtPassword = new JTextField(txtSize);
+        txtRePassword = new JTextField(txtSize);
 
-        btnUserReg = new JButton("사용자 생성");
+        btnUserReg = new JButton("패스워드 변경");
         btnUserReg.setPreferredSize(btnSize);
         btnCancel = new JButton("취소");
         btnCancel.setPreferredSize(btnSize);
@@ -99,10 +98,15 @@ public class UserRegForm extends JDialog {
         JPanel pnlPassword = new JPanel(flowLeft);
         pnlPassword.add(lblPassword);
         pnlPassword.add(txtPassword);
+        
+        JPanel pnlRePassword = new JPanel(flowLeft);
+        pnlPassword.add(lblRePassword);
+        pnlPassword.add(txtRePassword);
 
         pnlCenter.add(lblInfo);
         pnlCenter.add(pnlUsername);
         pnlCenter.add(pnlPassword);
+        pnlCenter.add(pnlRePassword);
 
         pnlSouth = new JPanel();
 		pnlSouth.add(btnUserReg);
@@ -130,32 +134,18 @@ public class UserRegForm extends JDialog {
             public void actionPerformed(ActionEvent ae) {
                 ae.getActionCommand();
                 try {
+                    // TODO : 패스워드 변경 시 권한 에러에 대한 예외처리 해야함....
                     /* 사용자 생성 */
-                    new VaultUserpassAuth(vault).createUser(txtUsername.getText(), txtPassword.getText());
-                    
-                    /* DB Connection 별 사용자가 사용 할 수 있는 Role 생성 */
-                    /* DB Connection 목록 조회 */
-                    String[] configList = new VaultDatabaseEngine(vault).configList();
-                    
-                    String policyName = "";
-                    for (int i = 0; i < configList.length; i++) {
-                        policyName += ", creds-"+configList[i];
+                    new VaultUserpassAuth(vault).updateUser(txtUsername.getText(), txtPassword.getText());
+                } catch (VaultException ve) {
+                    System.out.println("출력 확인");
+                    System.out.println(ve.getMessage());
 
-                        String statements = Common.getNestedJsonToStr(new VaultDatabaseEngine(vault).readRole(configList[i]), "data", "creation_statements");
-                        // TODO : 대괄호 지워줘야함
-                        statements = statements.substring(1, statements.length()-1);
-                        new VaultDatabaseEngine(vault).createRole(txtUsername.getText(), configList[i], statements);
-                    }
-
-                    /* 이미 생성된 DB Connection에 접근 가능하도록 Policy 추가 */
-                    new VaultUserpassAuth(vault).updateUserPolicy(txtUsername.getText(), new VaultUserpassAuth(vault).getUserPolicy(txtUsername.getText())+policyName);
-                } catch (VaultException e) {
-                    e.printStackTrace();
+                    ve.printStackTrace();
                 }
 				dispose();
-                owner.updatePnlUser();
 				owner.setVisible(true);
-				owner.setBtnUserReg(true);
+				// owner.setBtnUserReg(true);
             }
         });
 
@@ -165,7 +155,7 @@ public class UserRegForm extends JDialog {
                 ae.getActionCommand();
 				dispose();
 				owner.setVisible(true);
-				owner.setBtnUserReg(true);
+				// owner.setBtnUserReg(true);
             }
         });
     }

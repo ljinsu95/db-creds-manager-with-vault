@@ -130,6 +130,16 @@ public class VaultUserpassAuth {
         System.out.println(result);
     }
 
+    /* 사용자 패스워드 변경 */
+    public void updateUser(String username, String password) throws VaultException {
+        System.out.println("User Update");
+        Map<String, String> data = new HashMap<>();
+        data.put("password", password);
+
+        String result = Common.postVaultRequest(vault.getVaultUrl() + "/v1/auth/db-userpass/users/"+username, vault.getVaultToken(), data);
+        System.out.println(result);
+    }
+
     /* 사용자 삭제 */
     public void deleteUser(String username) throws VaultException {
         System.out.println("User Delete");

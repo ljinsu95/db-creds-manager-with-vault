@@ -76,7 +76,7 @@ public class ManagerMainForm extends JDialog {
 				new VaultUserpassAuth(vault).authEnable();
 			}
 		} catch (VaultException ve) {
-			ve.getStackTrace();
+			ve.printStackTrace();
 		}
 
 		String[] configs = null;
@@ -233,7 +233,7 @@ public class ManagerMainForm extends JDialog {
 					setVisible(false);
 					mainForm.setVisible(true);
 				} catch (VaultException ve) {
-					ve.getStackTrace();
+					ve.printStackTrace();
 				}
 			}
 		});
@@ -249,7 +249,7 @@ public class ManagerMainForm extends JDialog {
 					setVisible(false);
 					userRegForm.setVisible(true);
 				} catch (VaultException ve) {
-					ve.getStackTrace();
+					ve.printStackTrace();
 				}
 			}
 		});
@@ -272,7 +272,7 @@ public class ManagerMainForm extends JDialog {
 						JOptionPane.showMessageDialog(ManagerMainForm.this, "사용자 삭제 완료", "사용자 삭제 완료",
 								JOptionPane.PLAIN_MESSAGE);
 					} catch (VaultException ve) {
-						ve.getStackTrace();
+						ve.printStackTrace();
 						updatePnlUser();
 						JOptionPane.showMessageDialog(ManagerMainForm.this, "사용자 삭제 중 에러 발생", "ERROR",
 								JOptionPane.ERROR_MESSAGE);

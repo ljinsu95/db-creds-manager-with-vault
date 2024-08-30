@@ -81,7 +81,7 @@ public class DatabaseRegForm extends JDialog {
 				// Database Engine 활성화
 				dbEngine.engineEnable();
 			} catch (VaultException e) {
-				e.getStackTrace();
+				e.printStackTrace();
 			}
 		} else if (dbEnable.equals("database")) {
 			System.out.println("Database Engine 활성화 상태");
@@ -246,7 +246,7 @@ public class DatabaseRegForm extends JDialog {
 				} catch (NullPointerException npe) {
 					System.out.println("user 없음.");
 				} catch (VaultException e) {
-					e.getStackTrace();
+					e.printStackTrace();
 				}
 
 				dispose();
